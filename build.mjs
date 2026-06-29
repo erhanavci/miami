@@ -12,8 +12,6 @@ const files = [
   ["index.html", "index.html"],
   ["src/styles.css", "src/styles.css"],
   ["src/supabase-kanban.js", "src/supabase-kanban.js"],
-  ["assets/thf-logo.png", "assets/thf-logo.png"],
-  ["assets/ehf-euro-logo.png", "assets/ehf-euro-logo.png"],
   ["assets/fonts/FormulaCondensed-Ultralight.ttf", "assets/fonts/FormulaCondensed-Ultralight.ttf"],
   ["assets/fonts/FormulaCondensed-Light.ttf", "assets/fonts/FormulaCondensed-Light.ttf"],
   ["assets/fonts/FormulaCondensed-Regular.ttf", "assets/fonts/FormulaCondensed-Regular.ttf"],
