@@ -1875,7 +1875,7 @@ h1 span {
 }
 
 .app-topbar {
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 18px;
   margin-bottom: 18px;
 }

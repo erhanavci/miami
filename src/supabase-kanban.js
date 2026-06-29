@@ -30,7 +30,7 @@ const progressStates = [
 
 const i18n = {
   en: {
-    authKicker: "THF Media Team • Secure Operations Hub",
+    authKicker: "",
     authHeadlineSub: "Coordinate every media operation.",
     authCopy: "Sign in to manage campaign tasks, match-week assets, calendar milestones and team assignments from one professional workspace.",
     accessTitle: "Workspace Access",
@@ -43,7 +43,7 @@ const i18n = {
     roleLabel: "Role",
     rolePlaceholder: "Video Editor",
     registerButton: "Create Account",
-    appKicker: "THF Media Team • Integrated Event Workflow",
+    appKicker: "",
     appHeadlineSub: "Plan. Produce. Publish. Report.",
     appCopy: "A professional command center for content production, approvals, live operations, team assignments, files, voice notes and calendar-based delivery.",
     currentUser: "Active user",
@@ -179,10 +179,10 @@ const i18n = {
     deleteNote: "Delete",
     editNotePrompt: "Edit note",
     deleteNoteConfirm: "Delete this note?",
-    footerCredit: "Copyright 2026 • Designed by THF Media Team. This workflow application was created by the THF Media Team.",
+    footerCredit: "COPYRIGHT 2026 - Erhan Avcı",
   },
   tr: {
-    authKicker: "THF Medya Ekibi • Güvenli Operasyon Merkezi",
+    authKicker: "",
     authHeadlineSub: "Tüm medya operasyonunu koordine et.",
     authCopy: "Kampanya görevlerini, maç haftası varlıklarını, takvim kilometre taşlarını ve ekip atamalarını tek profesyonel çalışma alanından yönet.",
     accessTitle: "Çalışma Alanı Girişi",
@@ -195,7 +195,7 @@ const i18n = {
     roleLabel: "Rol",
     rolePlaceholder: "Video Editör",
     registerButton: "Üye Ol",
-    appKicker: "THF Medya Ekibi • Entegre Etkinlik Workflow",
+    appKicker: "",
     appHeadlineSub: "Planla. Üret. Yayınla. Raporla.",
     appCopy: "İçerik üretimi, onaylar, canlı operasyon, ekip atamaları, dosyalar, ses notları ve takvim bazlı teslimler için profesyonel yönetim ekranı.",
     currentUser: "Aktif kullanıcı",
@@ -331,7 +331,7 @@ const i18n = {
     deleteNote: "Sil",
     editNotePrompt: "Notu düzenle",
     deleteNoteConfirm: "Bu not silinsin mi?",
-    footerCredit: "Copyright 2026 • THF Media Team tarafından tasarlanmıştır. Bu workflow uygulaması THF Medya Ekibi tarafından hazırlanmıştır.",
+    footerCredit: "COPYRIGHT 2026 - Erhan Avcı",
   },
 };
 
