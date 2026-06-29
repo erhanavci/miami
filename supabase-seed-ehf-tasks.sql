@@ -1,0 +1,2 @@
+-- Miami Workflow does not seed default tasks.
+-- Use the app UI or calendar + button to create fresh Miami tasks.
