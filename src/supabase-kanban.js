@@ -30,7 +30,7 @@ const progressStates = [
 
 const i18n = {
   en: {
-    authKicker: "",
+    authKicker: "THF Media Team • Secure Operations Hub",
     authHeadlineSub: "Coordinate every media operation.",
     authCopy: "Sign in to manage campaign tasks, match-week assets, calendar milestones and team assignments from one professional workspace.",
     accessTitle: "Workspace Access",
@@ -43,7 +43,7 @@ const i18n = {
     roleLabel: "Role",
     rolePlaceholder: "Video Editor",
     registerButton: "Create Account",
-    appKicker: "",
+    appKicker: "THF Media Team • Integrated Event Workflow",
     appHeadlineSub: "Plan. Produce. Publish. Report.",
     appCopy: "A professional command center for content production, approvals, live operations, team assignments, files, voice notes and calendar-based delivery.",
     currentUser: "Active user",
@@ -141,7 +141,7 @@ const i18n = {
     confirmEmail: "Account created. If email confirmation is enabled in Supabase, confirm your email and then log in.",
     adminNotified: "Account created. Confirm your email, then wait for admin approval.",
     dbError: "Database could not be read",
-    pendingKicker: "MIAMI WORKFLOW",
+    pendingKicker: "EHF EURO 2026 WORKFLOW",
     pendingTitle: "Access pending approval.",
     pendingCopy: "Your account has been created. An administrator must approve your access before you can view the workflow.",
     adminLabel: "Admin",
@@ -179,10 +179,10 @@ const i18n = {
     deleteNote: "Delete",
     editNotePrompt: "Edit note",
     deleteNoteConfirm: "Delete this note?",
-    footerCredit: "COPYRIGHT 2026 - Erhan Avcı",
+    footerCredit: "Copyright 2026 • Designed by THF Media Team. This workflow application was created by the THF Media Team.",
   },
   tr: {
-    authKicker: "",
+    authKicker: "THF Medya Ekibi • Güvenli Operasyon Merkezi",
     authHeadlineSub: "Tüm medya operasyonunu koordine et.",
     authCopy: "Kampanya görevlerini, maç haftası varlıklarını, takvim kilometre taşlarını ve ekip atamalarını tek profesyonel çalışma alanından yönet.",
     accessTitle: "Çalışma Alanı Girişi",
@@ -195,7 +195,7 @@ const i18n = {
     roleLabel: "Rol",
     rolePlaceholder: "Video Editör",
     registerButton: "Üye Ol",
-    appKicker: "",
+    appKicker: "THF Medya Ekibi • Entegre Etkinlik Workflow",
     appHeadlineSub: "Planla. Üret. Yayınla. Raporla.",
     appCopy: "İçerik üretimi, onaylar, canlı operasyon, ekip atamaları, dosyalar, ses notları ve takvim bazlı teslimler için profesyonel yönetim ekranı.",
     currentUser: "Aktif kullanıcı",
@@ -293,7 +293,7 @@ const i18n = {
     confirmEmail: "Üyelik oluşturuldu. Supabase email onayı açıksa e-postanı onaylayıp giriş yap.",
     adminNotified: "Üyelik oluşturuldu. E-postanı onayla; ardından admin onayını bekle.",
     dbError: "Database okunamadı",
-    pendingKicker: "MIAMI WORKFLOW",
+    pendingKicker: "EHF EURO 2026 WORKFLOW",
     pendingTitle: "Erişim admin onayı bekliyor.",
     pendingCopy: "Hesabın oluşturuldu. Workflow ekranına erişebilmen için bir adminin hesabını onaylaması gerekiyor.",
     adminLabel: "Admin",
@@ -331,11 +331,40 @@ const i18n = {
     deleteNote: "Sil",
     editNotePrompt: "Notu düzenle",
     deleteNoteConfirm: "Bu not silinsin mi?",
-    footerCredit: "COPYRIGHT 2026 - Erhan Avcı",
+    footerCredit: "Copyright 2026 • THF Media Team tarafından tasarlanmıştır. Bu workflow uygulaması THF Medya Ekibi tarafından hazırlanmıştır.",
   },
 };
 
-const importedTasks = [];
+const importedTasks = [
+  ["2026-03-02", "Championship announcement post (Graphic animation) v1 + Social ads", "publish", "Mar"],
+  ["2026-03-11", "Championship announcement post (Graphic animation) v2 + Social ads", "publish", "Mar"],
+  ["2026-03-16", "Championship announcement post (Graphic animation) v3 + Social ads", "publish", "Mar"],
+  ["2026-03-27", "Championship announcement post (Graphic animation) v4 + Social ads", "publish", "Mar"],
+  ["2026-04-03", "Championship announcement post (Graphic animation) v5 + Social ads", "publish", "Apr"],
+  ["2026-04-07", "Q&A with athletes v1", "plan", "Apr"],
+  ["2026-04-16", "Championship announcement post (Graphic animation) v6 + Social ads", "publish", "Apr"],
+  ["2026-04-22", "Q&A with athletes v2", "plan", "Apr"],
+  ["2026-05-04", "Official promotional video", "production", "May"],
+  ["2026-05-11", "Official mascot", "plan", "May"],
+  ["2026-05-18", "Ticket sales announcement", "publish", "May"],
+  ["2026-05-29", "Ticket giveaway", "publish", "May"],
+  ["2026-06-05", "Influencer video v1", "production", "Jun"],
+  ["2026-06-10", "Influencer video v2", "production", "Jun"],
+  ["2026-06-19", "Volunteer announcement", "publish", "Jun"],
+  ["2026-06-24", "Influencer video v3", "production", "Jun"],
+  ["2026-07-03", "Content about handball events in Antalya", "production", "Jul"],
+  ["2026-07-07", "Content about handball events in Antalya", "production", "Jul"],
+  ["2026-07-17", "Content about handball events in Antalya", "production", "Jul"],
+  ["2026-07-22", "Content about handball events in Antalya", "production", "Jul"],
+  ["2026-09-04", "Official song announcement", "publish", "Sep"],
+  ["2026-09-07", "The mascot's school visit", "publish", "Sep"],
+  ["2026-09-18", "The mascot's shopping mall visit", "publish", "Sep"],
+  ["2026-09-23", "The mascot's Antalya Sports Hall visit", "live", "Sep"],
+  ["2026-10-02", "Turkey National Team's player's talks at school", "publish", "Oct"],
+  ["2026-10-16", "Turkey National Team's player's talks at school", "publish", "Oct"],
+  ["2026-11-02", "Content for visuals prepared in Antalya regarding the European Championship.", "production", "Nov"],
+  ["2026-11-20", "Content for visuals prepared in Antalya regarding the European Championship.", "production", "Nov"],
+];
 
 let session = null;
 let currentProfile = null;
@@ -612,6 +641,7 @@ async function renderShell() {
     return;
   }
   requestBrowserNotifications();
+  await seedImportedTasks();
   await loadData();
   subscribeDataChanges();
   document.getElementById("current-user-label").textContent =
@@ -669,7 +699,7 @@ async function ensureProfile() {
 async function seedImportedTasks() {
   const rows = importedTasks.map(([date, title, column, sheet]) => ({
     title,
-    description: title,
+    description: `${title}\nKaynak: EHF Women's Euro 2026.xlsx / ${sheet}`,
     status: column,
     task_date: date,
     deadline_date: date,

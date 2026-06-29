@@ -1770,7 +1770,7 @@ h1 span {
   }
 }
 
-/* Miami corporate dark workflow skin */
+/* EHF EURO 2026 corporate dark workflow skin */
 :root {
   color-scheme: dark;
   background: var(--ehf-blue);
@@ -1875,7 +1875,7 @@ h1 span {
 }
 
 .app-topbar {
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 18px;
   margin-bottom: 18px;
 }
@@ -2371,196 +2371,5 @@ h1 span {
     bottom: 12px;
     font-size: 2rem;
     opacity: 0.42;
-  }
-}
-
-@media (max-width: 760px) {
-  .pipeline-shell {
-    padding: 14px;
-  }
-
-  .auth-layout,
-  .kanban-layout {
-    width: 100%;
-  }
-
-  .kanban-hero {
-    margin-bottom: 14px;
-  }
-
-  .app-topbar {
-    align-items: center;
-    gap: 10px;
-  }
-
-  .brand-lockup.compact {
-    gap: 10px;
-  }
-
-  .brand-lockup.compact img {
-    width: 52px;
-    height: 52px;
-  }
-
-  .brand-lockup.compact span {
-    height: 38px;
-  }
-
-  .top-actions {
-    gap: 6px;
-  }
-
-  .top-icon-button,
-  .avatar-button {
-    width: 38px;
-    height: 38px;
-  }
-
-  .kanban-shell h1 {
-    font-size: clamp(2.2rem, 14vw, 3.4rem);
-    line-height: 0.95;
-  }
-
-  .kanban-shell h1 span {
-    font-size: clamp(1.35rem, 8vw, 2rem);
-  }
-
-  .hero-copy,
-  .pipeline-kicker {
-    font-size: 0.9rem;
-  }
-
-  .session-bar {
-    padding: 10px;
-  }
-
-  .calendar-panel {
-    max-height: 52svh;
-    margin-bottom: 12px;
-    padding: 10px;
-    overflow: auto;
-    overscroll-behavior: contain;
-  }
-
-  .calendar-panel .board-toolbar {
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-  }
-
-  .calendar-panel .toolbar-actions {
-    width: auto;
-    flex: 0 0 auto;
-  }
-
-  .calendar-panel .toolbar-actions > * {
-    flex: 0 0 auto;
-  }
-
-  .calendar-panel .icon-button {
-    width: 38px;
-    min-height: 38px;
-  }
-
-  .calendar-weekdays {
-    display: grid !important;
-    gap: 4px;
-    margin-bottom: 5px;
-  }
-
-  .calendar-weekdays span {
-    font-size: 0.7rem;
-  }
-
-  .calendar-grid {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 4px;
-  }
-
-  .calendar-day {
-    min-height: clamp(44px, 7.2svh, 58px);
-    padding: 4px;
-    border-radius: 7px;
-  }
-
-  .calendar-date {
-    width: 22px;
-    height: 22px;
-    font-size: 0.75rem;
-  }
-
-  .calendar-add-button {
-    top: 4px;
-    right: 4px;
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    font-size: 1rem;
-  }
-
-  .calendar-tasks {
-    gap: 3px;
-    margin-top: 4px;
-  }
-
-  .calendar-task {
-    min-height: 18px;
-    padding: 2px 4px;
-    overflow: hidden;
-    font-size: 0.62rem;
-    line-height: 1.1;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .board-panel {
-    padding: 10px;
-  }
-
-  .board-toolbar {
-    gap: 10px;
-  }
-
-  .view-toggle {
-    width: 100%;
-  }
-
-  .view-toggle .ghost-button {
-    min-width: 0;
-  }
-
-  .kanban-board.all-fit {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .kanban-column {
-    min-height: auto;
-  }
-
-  .kanban-board.all-fit .column-heading {
-    min-height: 54px;
-  }
-
-  .kanban-board.all-fit .task-stack {
-    min-height: 160px;
-  }
-
-  .task-card {
-    padding: 12px;
-  }
-
-  .task-modal {
-    align-items: end;
-    padding: 0;
-  }
-
-  .task-modal-card,
-  .panel-modal-card {
-    width: 100%;
-    max-height: 92svh;
-    border-radius: 14px 14px 0 0;
   }
 }
