@@ -2564,3 +2564,312 @@ h1 span {
     border-radius: 14px 14px 0 0;
   }
 }
+
+/* Miami light workflow skin */
+:root {
+  --ehf-blue: #fff7fb;
+  --ehf-yellow: #ff3ca8;
+  --ehf-blue-rgb: 255, 247, 251;
+  --ehf-yellow-rgb: 255, 60, 168;
+  --miami-ink: #251425;
+  --miami-muted: #7f5271;
+  --miami-pink: #ff3ca8;
+  --miami-hot: #ff1f7a;
+  --miami-cyan: #25d8d0;
+  --miami-sun: #ffd166;
+  color-scheme: light;
+  background: #fff7fb;
+  color: var(--miami-ink);
+}
+
+.pipeline-shell,
+.kanban-shell {
+  background:
+    radial-gradient(circle at 12% 4%, rgba(255, 60, 168, 0.34), transparent 31%),
+    radial-gradient(circle at 92% 16%, rgba(37, 216, 208, 0.3), transparent 30%),
+    radial-gradient(circle at 82% 94%, rgba(255, 209, 102, 0.26), transparent 34%),
+    linear-gradient(145deg, #fff9fc 0%, #ffe7f4 46%, #e9fbff 100%);
+  color: var(--miami-ink);
+}
+
+.pipeline-shell::before,
+.kanban-shell::before {
+  background-image:
+    linear-gradient(rgba(255, 31, 122, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 216, 208, 0.08) 1px, transparent 1px);
+}
+
+.pipeline-shell::after {
+  border-color: rgba(255, 60, 168, 0.26);
+  border-left-color: transparent;
+  border-top-color: transparent;
+}
+
+.pipeline-glow-red {
+  background: #ff3ca8;
+}
+
+.pipeline-glow-cyan {
+  background: #25d8d0;
+}
+
+.behere-mark {
+  color: rgba(255, 31, 122, 0.48);
+  text-shadow: none;
+}
+
+.behere-mark span:first-child {
+  color: rgba(37, 216, 208, 0.55);
+}
+
+.behere-mark::before {
+  border-color: rgba(255, 60, 168, 0.18);
+  border-left-color: transparent;
+  border-top-color: transparent;
+}
+
+.kanban-shell h1 {
+  color: var(--miami-hot);
+  text-shadow: 0 10px 28px rgba(255, 31, 122, 0.16);
+}
+
+.kanban-shell h1 span {
+  color: #12aaa5;
+}
+
+.hero-copy,
+.kanban-shell .hero-copy,
+.auth-message,
+.empty-note,
+.task-card span,
+.asset-list p,
+.voice-box span,
+.notification-item span,
+.notification-item small,
+.approval-row span,
+.empty-state,
+.task-list-main span,
+.task-list-date,
+.task-list-counts,
+.task-card-meta,
+.site-footer p {
+  color: var(--miami-muted);
+}
+
+.auth-card,
+.board-panel,
+.editor-card,
+.calendar-panel,
+.session-bar,
+.task-card,
+.asset-link,
+.voice-note,
+.voice-box,
+.file-drop,
+.note-item,
+.profile-photo-editor,
+.notification-item,
+.approval-row,
+.task-list-row,
+.calendar-day,
+.task-stack {
+  border-color: rgba(255, 60, 168, 0.2);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.72)),
+    rgba(255, 255, 255, 0.72);
+  color: var(--miami-ink);
+  box-shadow: 0 22px 60px rgba(255, 60, 168, 0.12);
+}
+
+.calendar-day.has-tasks {
+  border-color: rgba(37, 216, 208, 0.46);
+  background:
+    linear-gradient(180deg, rgba(232, 255, 253, 0.92), rgba(255, 255, 255, 0.76)),
+    rgba(255, 255, 255, 0.76);
+}
+
+.auth-card-top strong,
+.board-toolbar h2,
+.panel-heading h2,
+.session-bar strong,
+.asset-list strong,
+.voice-box strong,
+.task-card strong,
+.task-list-main strong,
+.approval-row strong,
+.notification-item strong,
+.note-item p,
+.toolbar-label,
+.session-bar span,
+.calendar-weekdays span,
+.calendar-date {
+  color: var(--miami-ink);
+}
+
+.toolbar-label,
+.session-bar span,
+.calendar-weekdays span {
+  opacity: 0.68;
+}
+
+.auth-form label,
+.task-form label,
+.user-form label {
+  color: #5f3656;
+}
+
+.auth-form input,
+.task-form input,
+.task-form textarea,
+.task-form select,
+.user-form input,
+.meet-schedule-grid input {
+  border-color: rgba(255, 60, 168, 0.24);
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--miami-ink);
+}
+
+.auth-form input:focus,
+.task-form input:focus,
+.task-form textarea:focus,
+.task-form select:focus,
+.user-form input:focus {
+  border-color: rgba(255, 60, 168, 0.75);
+  box-shadow: 0 0 0 3px rgba(255, 60, 168, 0.14);
+}
+
+.auth-tab,
+.ghost-button,
+.top-icon-button,
+.avatar-button,
+.icon-mini-button {
+  border-color: rgba(255, 60, 168, 0.22);
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--miami-ink);
+}
+
+.auth-tab.active,
+.view-toggle .ghost-button.active {
+  border-color: rgba(255, 31, 122, 0.6);
+  background: linear-gradient(135deg, #ff3ca8, #ff7bc4);
+  color: #fff;
+}
+
+.primary-button {
+  border-color: rgba(255, 31, 122, 0.78);
+  background: linear-gradient(135deg, #ff1f7a, #ff72bf);
+  color: #fff;
+  box-shadow: 0 14px 34px rgba(255, 31, 122, 0.26);
+}
+
+.danger-button,
+.asset-remove,
+.icon-mini-button.danger {
+  border-color: rgba(255, 77, 109, 0.45);
+  background: rgba(255, 77, 109, 0.14);
+  color: #9f1239;
+}
+
+.calendar-add-button,
+.top-icon-button em {
+  border-color: rgba(255, 31, 122, 0.62);
+  background: #ff3ca8;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(255, 31, 122, 0.22);
+}
+
+.calendar-add-button:hover {
+  background: #25d8d0;
+  color: #062b2b;
+}
+
+.calendar-task {
+  border-color: rgba(255, 60, 168, 0.24);
+  background: rgba(255, 60, 168, 0.1);
+  color: var(--miami-ink);
+}
+
+.calendar-task:hover,
+.task-card.selected,
+.notification-item.deadline {
+  border-color: rgba(255, 31, 122, 0.6);
+  background: rgba(255, 60, 168, 0.14);
+}
+
+.notification-item {
+  border-left-color: #25d8d0;
+}
+
+.notification-item.read {
+  background: rgba(255, 255, 255, 0.52);
+}
+
+.user-pill,
+.progress-pill.progress-ongoing {
+  background: rgba(37, 216, 208, 0.18);
+  color: #08615f;
+}
+
+.progress-pill.progress-completed {
+  background: rgba(34, 197, 94, 0.18);
+  color: #166534;
+}
+
+.priority-pill {
+  color: #29131f;
+}
+
+.priority-pill.priority-low {
+  background: #9ff5f0;
+}
+
+.priority-pill.priority-medium {
+  background: #ffd166;
+}
+
+.priority-pill.priority-high {
+  background: #ff9f6e;
+}
+
+.priority-pill.priority-urgent {
+  background: #ff3ca8;
+  color: #fff;
+}
+
+.mini-avatar {
+  border-color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 60, 168, 0.16);
+  color: var(--miami-ink);
+}
+
+.site-footer p {
+  border-top-color: rgba(255, 60, 168, 0.22);
+}
+
+.tone-blue {
+  background: linear-gradient(135deg, #25d8d0, #4aa3ff);
+}
+
+.tone-gold {
+  background: linear-gradient(135deg, #ffd166, #ff9f1c);
+}
+
+.tone-orange {
+  background: linear-gradient(135deg, #ff8a5b, #ff3ca8);
+}
+
+.tone-violet {
+  background: linear-gradient(135deg, #9b5cff, #ff7bc4);
+}
+
+.tone-rose {
+  background: linear-gradient(135deg, #ff1f7a, #ff8ecf);
+}
+
+.tone-red {
+  background: linear-gradient(135deg, #ff4d6d, #ff3ca8);
+}
+
+.tone-green {
+  background: linear-gradient(135deg, #1dd1a1, #a3e635);
+}
