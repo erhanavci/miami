@@ -3,10 +3,405 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="refresh" content="0; url=./preview.html" />
-    <title>THF Medya Kanban</title>
+    <title>Miami Workflow</title>
+    <link rel="stylesheet" href="./src/styles.css" />
   </head>
   <body>
-    <a href="./preview.html">THF Medya Kanban</a>
+    <main class="pipeline-shell kanban-shell">
+      <div class="pipeline-glow pipeline-glow-red"></div>
+      <div class="pipeline-glow pipeline-glow-cyan"></div>
+      <div class="behere-mark" aria-hidden="true">
+        <span>BE</span>
+        <span>HERE</span>
+      </div>
+
+      <section class="auth-layout" id="auth-screen" aria-labelledby="auth-title">
+        <div class="auth-copy">
+          <h1 id="auth-title">
+            MIAMI WORKFLOW
+            <span data-i18n="authHeadlineSub">Coordinate every media operation.</span>
+          </h1>
+          <p class="hero-copy" data-i18n="authCopy">
+            Sign in to manage campaign tasks, match-week assets, calendar milestones and team
+            assignments from one professional workspace.
+          </p>
+        </div>
+
+        <section class="auth-card" aria-label="Giriş ve üyelik">
+          <div class="auth-card-top">
+            <strong data-i18n="accessTitle">Workspace Access</strong>
+            <button class="ghost-button lang-toggle" type="button" data-lang-toggle>TR</button>
+          </div>
+          <div class="auth-tabs" role="tablist" aria-label="Giriş seçenekleri">
+            <button class="auth-tab active" type="button" id="login-tab" data-i18n="loginTab">Login</button>
+            <button class="auth-tab" type="button" id="register-tab" data-i18n="registerTab">Register</button>
+          </div>
+
+          <form id="login-form" class="auth-form">
+            <label>
+              <span data-i18n="emailLabel">Email</span>
+              <input id="login-email" type="email" autocomplete="email" required />
+            </label>
+            <label>
+              <span data-i18n="passwordLabel">Password</span>
+              <input id="login-password" type="password" autocomplete="current-password" required />
+            </label>
+            <button class="primary-button" type="submit" data-i18n="loginButton">Login</button>
+          </form>
+
+          <form id="register-form" class="auth-form hidden">
+            <label>
+              <span data-i18n="nameLabel">Full name</span>
+              <input id="register-name" type="text" autocomplete="name" required />
+            </label>
+            <label>
+              <span data-i18n="roleLabel">Role</span>
+              <input id="register-role" type="text" placeholder="Video Editor" data-i18n-placeholder="rolePlaceholder" required />
+            </label>
+            <label>
+              <span data-i18n="emailLabel">Email</span>
+              <input id="register-email" type="email" autocomplete="email" required />
+            </label>
+            <label>
+              <span data-i18n="passwordLabel">Password</span>
+              <input id="register-password" type="password" autocomplete="new-password" minlength="4" required />
+            </label>
+            <button class="primary-button" type="submit" data-i18n="registerButton">Create Account</button>
+          </form>
+
+          <p class="auth-message" id="auth-message"></p>
+        </section>
+      </section>
+
+      <section class="auth-layout app-hidden" id="pending-screen" aria-labelledby="pending-title">
+        <div class="auth-copy">
+          <p class="pipeline-kicker" data-i18n="pendingKicker">MIAMI WORKFLOW</p>
+          <h1 id="pending-title">
+            <span data-i18n="pendingTitle">Access pending approval.</span>
+          </h1>
+          <p class="hero-copy" data-i18n="pendingCopy">
+            Your account has been created. An administrator must approve your access before you can
+            view the workflow.
+          </p>
+          <button class="ghost-button" type="button" id="pending-logout-button" data-i18n="logout">Logout</button>
+        </div>
+      </section>
+
+      <section class="pipeline-layout kanban-layout app-hidden" id="app-screen" aria-labelledby="pipeline-title">
+        <header class="pipeline-hero kanban-hero">
+          <div class="app-topbar">
+            <div class="top-actions">
+              <button class="ghost-button lang-toggle" type="button" data-lang-toggle>TR</button>
+              <button class="top-icon-button" type="button" id="notification-button" aria-label="Notifications">
+                <span aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                  </svg>
+                </span>
+                <em class="app-hidden" id="notification-count">0</em>
+              </button>
+              <button class="ghost-button app-hidden" type="button" id="admin-page-button" data-i18n="adminLabel">Admin</button>
+              <button class="avatar-button" type="button" id="profile-button" aria-label="Profile">
+                <img class="app-hidden" id="profile-avatar" alt="" />
+                <span id="profile-initials">EA</span>
+              </button>
+            </div>
+          </div>
+          <div class="hero-grid">
+            <h1 id="pipeline-title">
+              MIAMI WORKFLOW
+              <span data-i18n="appHeadlineSub">Plan. Produce. Publish. Report.</span>
+            </h1>
+            <p class="hero-copy" data-i18n="appCopy">
+              A professional command center for content production, approvals, live operations,
+              team assignments, files, voice notes and calendar-based delivery.
+            </p>
+          </div>
+          <div class="session-bar">
+            <div>
+              <span data-i18n="currentUser">Active user</span>
+              <strong id="current-user-label">-</strong>
+            </div>
+            <button class="ghost-button" type="button" id="logout-button" data-i18n="logout">Logout</button>
+          </div>
+        </header>
+
+        <section class="calendar-panel" aria-label="Görev takvimi">
+          <div class="board-toolbar">
+            <div>
+              <p class="toolbar-label" data-i18n="calendarLabel">Calendar</p>
+              <h2 id="calendar-title">Görev Takvimi</h2>
+            </div>
+            <div class="toolbar-actions">
+              <button class="ghost-button icon-button" type="button" id="calendar-prev" aria-label="Önceki ay">‹</button>
+              <button class="ghost-button icon-button" type="button" id="calendar-next" aria-label="Sonraki ay">›</button>
+            </div>
+          </div>
+          <div class="calendar-weekdays" aria-hidden="true">
+            <span data-i18n="weekdayMon">Mon</span>
+            <span data-i18n="weekdayTue">Tue</span>
+            <span data-i18n="weekdayWed">Wed</span>
+            <span data-i18n="weekdayThu">Thu</span>
+            <span data-i18n="weekdayFri">Fri</span>
+            <span data-i18n="weekdaySat">Sat</span>
+            <span data-i18n="weekdaySun">Sun</span>
+          </div>
+          <div class="calendar-grid" id="calendar-grid"></div>
+        </section>
+
+        <section class="workspace-grid" aria-label="Kanban çalışma alanı">
+          <div class="board-panel">
+            <div class="board-toolbar">
+              <div>
+                <p class="toolbar-label" data-i18n="activeView">Active view</p>
+                <h2 id="active-view-title">Tüm Pipeline</h2>
+              </div>
+              <div class="toolbar-actions">
+                <div class="view-toggle" aria-label="Pipeline görünümü">
+                  <button class="ghost-button active" type="button" id="card-view-button" data-view-mode="cards" data-i18n="cardView">Cards</button>
+                  <button class="ghost-button" type="button" id="list-view-button" data-view-mode="list" data-i18n="listView">List</button>
+                </div>
+                <button class="primary-button" type="button" id="new-task-button" data-i18n="newTaskButton">+ Task</button>
+              </div>
+            </div>
+            <div class="kanban-board" id="kanban-board" aria-live="polite"></div>
+          </div>
+        </section>
+
+      </section>
+
+      <footer class="site-footer">
+        <p data-i18n="footerCredit">
+          COPYRIGHT 2026 - Erhan Avcı
+        </p>
+      </footer>
+
+      <section class="panel-modal app-hidden" id="profile-modal" aria-modal="true" role="dialog" aria-labelledby="profile-title">
+        <div class="task-modal-backdrop" data-close-panel></div>
+        <section class="editor-card panel-modal-card">
+          <div class="panel-heading">
+            <div>
+              <p class="toolbar-label" data-i18n="profileLabel">Profile</p>
+              <h2 id="profile-title" data-i18n="profileTitle">Profile Settings</h2>
+            </div>
+            <button class="ghost-button icon-button" type="button" data-close-panel aria-label="Close">×</button>
+          </div>
+          <form id="profile-form" class="task-form">
+            <div class="profile-photo-editor">
+              <div class="profile-photo-preview" id="profile-photo-preview"></div>
+              <div class="profile-photo-actions">
+                <button class="ghost-button icon-text-button" type="button" id="change-profile-photo">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                  </svg>
+                  <span data-i18n="changePhoto">Change</span>
+                </button>
+                <button class="danger-button icon-text-button app-hidden" type="button" id="remove-profile-photo">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 14H6L5 6"></path>
+                  </svg>
+                  <span data-i18n="removePhoto">Remove</span>
+                </button>
+              </div>
+              <input id="profile-photo" class="app-hidden" type="file" accept="image/*" />
+            </div>
+            <label>
+              <span data-i18n="nameLabel">Full name</span>
+              <input id="profile-name" type="text" />
+            </label>
+            <label>
+              <span data-i18n="roleLabel">Role</span>
+              <input id="profile-role" type="text" />
+            </label>
+            <label>
+              <span data-i18n="newPassword">New password</span>
+              <input id="profile-password" type="password" autocomplete="new-password" minlength="6" />
+            </label>
+            <div class="form-actions">
+              <button class="primary-button icon-text-button" type="submit" id="profile-save-button">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"></path>
+                  <path d="M17 21v-8H7v8"></path><path d="M7 3v5h8"></path>
+                </svg>
+                <span data-i18n="saveButton">Save</span>
+              </button>
+            </div>
+            <p class="form-status" id="profile-status"></p>
+          </form>
+        </section>
+      </section>
+
+      <section class="panel-modal app-hidden" id="admin-modal" aria-modal="true" role="dialog" aria-labelledby="admin-title">
+        <div class="task-modal-backdrop" data-close-panel></div>
+        <section class="editor-card panel-modal-card">
+          <div class="panel-heading">
+            <div>
+              <p class="toolbar-label" data-i18n="adminLabel">Admin</p>
+              <h2 id="admin-title" data-i18n="adminPageTitle">Admin Panel</h2>
+            </div>
+            <button class="ghost-button icon-button" type="button" data-close-panel aria-label="Close">×</button>
+          </div>
+          <section class="compact-card">
+            <h3 data-i18n="approvalTitle">User Approvals</h3>
+            <div class="approval-list" id="approval-list"></div>
+          </section>
+          <section class="compact-card">
+            <h3 data-i18n="defineUser">Define User</h3>
+            <form id="user-form" class="user-form">
+              <input id="user-name" type="text" placeholder="Full name / role" data-i18n-placeholder="userPlaceholder" required />
+              <button class="primary-button" type="submit" data-i18n="addButton">Add</button>
+            </form>
+            <div class="user-list" id="user-list"></div>
+          </section>
+        </section>
+      </section>
+
+      <section class="panel-modal app-hidden" id="notifications-modal" aria-modal="true" role="dialog" aria-labelledby="notifications-title">
+        <div class="task-modal-backdrop" data-close-panel></div>
+        <section class="editor-card panel-modal-card narrow">
+          <div class="panel-heading">
+            <div>
+              <p class="toolbar-label" data-i18n="notificationsLabel">Notifications</p>
+              <h2 id="notifications-title" data-i18n="notificationsTitle">Notifications</h2>
+            </div>
+            <button class="ghost-button icon-button" type="button" data-close-panel aria-label="Close">×</button>
+          </div>
+          <div class="notification-list" id="notification-list"></div>
+        </section>
+      </section>
+
+      <section class="task-modal app-hidden" id="task-modal" aria-modal="true" role="dialog" aria-labelledby="editor-title">
+        <div class="task-modal-backdrop" id="task-modal-backdrop"></div>
+        <section class="editor-card task-modal-card">
+          <div class="panel-heading">
+            <div>
+              <p class="toolbar-label" data-i18n="cardDetail">Card detail</p>
+              <h2 id="editor-title">Yeni Görev</h2>
+            </div>
+            <button class="ghost-button icon-button" type="button" id="close-task-modal" aria-label="Close">×</button>
+          </div>
+
+          <form id="task-form" class="task-form">
+            <input type="hidden" id="task-id" />
+
+            <label>
+              <span data-i18n="titleLabel">Title</span>
+              <input id="task-title" type="text" placeholder="Saturday reels package" data-i18n-placeholder="taskTitlePlaceholder" required />
+            </label>
+
+            <label>
+              <span data-i18n="descriptionLabel">Description</span>
+              <textarea id="task-desc" rows="4" placeholder="Short note, content target or delivery criteria" data-i18n-placeholder="taskDescPlaceholder"></textarea>
+            </label>
+
+            <div class="form-grid">
+              <label>
+                <span data-i18n="dateLabel">Date</span>
+                <input id="task-date" type="date" />
+              </label>
+              <label>
+                <span data-i18n="deadlineLabel">Deadline</span>
+                <input id="task-deadline" type="date" />
+              </label>
+            </div>
+
+            <div class="form-grid">
+              <label>
+                <span data-i18n="priorityLabel">Priority</span>
+                <select id="task-priority"></select>
+              </label>
+            </div>
+            <div class="form-grid">
+              <label>
+                <span data-i18n="progressLabel">Status</span>
+                <select id="task-progress"></select>
+              </label>
+            </div>
+            <input type="hidden" id="task-column" value="plan" />
+            <div class="form-grid">
+              <label class="assignee-field">
+                <span data-i18n="assigneesLabel">Assignees</span>
+                <div class="assignee-checklist" id="assignee-list"></div>
+              </label>
+            </div>
+
+            <label class="file-drop">
+              <span data-i18n="uploadFile">Upload file</span>
+              <input id="task-files" type="file" multiple />
+            </label>
+
+            <div class="voice-box">
+              <div>
+                <strong data-i18n="voiceNote">Voice note</strong>
+                <span id="voice-status" data-i18n="voiceReady">Ready</span>
+              </div>
+              <button class="ghost-button" type="button" id="record-button" data-i18n="recordStart">Start Recording</button>
+            </div>
+
+            <div class="asset-list" id="asset-list"></div>
+
+            <section class="meet-box">
+              <div>
+                <strong data-i18n="googleMeetTitle">Google Meet</strong>
+                <span id="google-meet-status" data-i18n="googleMeetReady">Ready</span>
+              </div>
+              <div class="meet-schedule-grid">
+                <label>
+                  <span data-i18n="meetingDateLabel">Meeting date</span>
+                  <input id="meet-date" type="date" />
+                </label>
+                <label>
+                  <span data-i18n="meetingStartLabel">Start time</span>
+                  <input id="meet-start-time" type="time" value="10:00" />
+                </label>
+                <label>
+                  <span data-i18n="meetingEndLabel">End time</span>
+                  <input id="meet-end-time" type="time" value="11:00" />
+                </label>
+              </div>
+              <div class="meet-actions">
+                <button class="ghost-button icon-text-button" type="button" id="connect-google-button">
+                  <span data-i18n="connectGoogle">Connect Google</span>
+                </button>
+                <button class="ghost-button icon-text-button app-hidden" type="button" id="disconnect-google-button">
+                  <span data-i18n="disconnectGoogle">Disconnect Google</span>
+                </button>
+                <button class="primary-button icon-text-button" type="button" id="create-meet-button">
+                  <span data-i18n="createMeet">Create Meet</span>
+                </button>
+                <button class="ghost-button icon-text-button app-hidden" type="button" id="update-meet-button">
+                  <span data-i18n="updateMeet">Update Meet</span>
+                </button>
+                <button class="danger-button icon-text-button app-hidden" type="button" id="delete-meet-button">
+                  <span data-i18n="deleteMeet">Delete Meet</span>
+                </button>
+                <a class="ghost-button icon-text-button app-hidden" id="join-meet-link" target="_blank" rel="noreferrer">
+                  <span data-i18n="joinMeet">Join Meet</span>
+                </a>
+              </div>
+            </section>
+
+            <section class="note-box">
+              <label>
+                <span data-i18n="notesTitle">Notes</span>
+                <textarea id="task-note" rows="3" placeholder="Add a note" data-i18n-placeholder="notePlaceholder"></textarea>
+              </label>
+              <button class="ghost-button" type="button" id="add-note-button" data-i18n="addNoteButton">Add Note</button>
+              <div class="note-list" id="note-list"></div>
+            </section>
+
+            <div class="form-actions">
+              <button class="danger-button app-hidden" type="button" id="delete-task-button" data-i18n="deleteButton">Delete</button>
+              <button class="ghost-button" type="button" id="clear-button" data-i18n="clearButton">Clear</button>
+              <button class="primary-button" type="submit" data-i18n="saveButton">Save</button>
+            </div>
+          </form>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="./src/supabase-kanban.js"></script>
   </body>
 </html>
