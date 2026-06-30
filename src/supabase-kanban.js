@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = "https://zzannmvjybpknetszqpb.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp6YW5ubXZqeWJwa25ldHN6cXBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NDA4MTAsImV4cCI6MjA5MzExNjgxMH0.MvZi6BG896cfzz30eUOC7lWmRncIjCSZiABJUA-tMfA";
+const ONESIGNAL_APP_ID = "43d11ed8-49f4-4cfa-af62-291df7a81e54";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -167,6 +168,15 @@ const i18n = {
     adminPageTitle: "Admin Panel",
     notificationsLabel: "Notifications",
     notificationsTitle: "Notifications",
+    pushTitle: "Mobile Notifications",
+    enablePushButton: "Enable Notifications",
+    pushSetupNeeded: "Add the app to your phone home screen, then enable notifications.",
+    pushMissingConfig: "OneSignal App ID is not configured yet.",
+    pushReady: "Notifications are ready.",
+    pushSubscribed: "Notifications enabled.",
+    pushBlocked: "Notifications are blocked on this device.",
+    pushUnsupported: "This browser does not support push notifications.",
+    pushHomeScreenHint: "On iPhone: Share > Add to Home Screen, then open the app from the home screen.",
     noNotifications: "No notifications yet.",
     markRead: "Mark read",
     notificationDelete: "Delete",
@@ -326,6 +336,15 @@ const i18n = {
     adminPageTitle: "Admin Paneli",
     notificationsLabel: "Bildirimler",
     notificationsTitle: "Bildirimler",
+    pushTitle: "Mobil Bildirimler",
+    enablePushButton: "Bildirimleri Aç",
+    pushSetupNeeded: "Uygulamayı telefonda ana ekrana ekle, sonra bildirimleri aç.",
+    pushMissingConfig: "OneSignal App ID henüz girilmedi.",
+    pushReady: "Bildirimler hazır.",
+    pushSubscribed: "Bildirimler açıldı.",
+    pushBlocked: "Bu cihazda bildirim izni kapalı.",
+    pushUnsupported: "Bu tarayıcı push bildirim desteklemiyor.",
+    pushHomeScreenHint: "iPhone'da: Paylaş > Ana Ekrana Ekle, sonra uygulamayı ana ekrandan aç.",
     noNotifications: "Henüz bildirim yok.",
     markRead: "Okundu",
     notificationDelete: "Sil",
@@ -377,6 +396,8 @@ let recentLocalEdits = new Set();
 let profilePhotoMarkedForRemoval = false;
 let profilePreviewObjectUrl = "";
 let googleConnected = null;
+let oneSignalInitialized = false;
+let oneSignalInitPromise = null;
 
 const authScreen = document.getElementById("auth-screen");
 const pendingScreen = document.getElementById("pending-screen");
@@ -404,6 +425,7 @@ async function boot() {
   session = data.session;
   wireEvents();
   applyI18n();
+  registerPwaWorker();
   await renderShell();
   setInterval(refreshData, 15000);
   document.addEventListener("visibilitychange", () => {
@@ -488,8 +510,10 @@ function wireEvents() {
   adminPageButton.addEventListener("click", () => openPanel(adminModal));
   notificationButton.addEventListener("click", () => {
     renderNotifications();
+    updatePushStatus();
     openPanel(notificationsModal);
   });
+  document.getElementById("enable-push-button").addEventListener("click", enablePushNotifications);
   document.getElementById("notification-list").addEventListener("click", (event) => {
     const deleteButton = event.target.closest("[data-delete-notification]");
     if (deleteButton) {
@@ -634,7 +658,8 @@ async function renderShell() {
     applyI18n();
     return;
   }
-  requestBrowserNotifications();
+  if (!ONESIGNAL_APP_ID) requestBrowserNotifications();
+  initOneSignal();
   await loadData();
   subscribeDataChanges();
   document.getElementById("current-user-label").textContent =
@@ -2031,6 +2056,119 @@ async function requestBrowserNotifications() {
   } catch {
     console.info(t("browserNotificationsBlocked"));
   }
+}
+
+function registerPwaWorker() {
+  if (!("serviceWorker" in navigator) || !window.isSecureContext) return;
+  navigator.serviceWorker.register("/pwa-sw.js").catch((error) => {
+    console.warn("PWA service worker could not be registered.", error);
+  });
+}
+
+function initOneSignal() {
+  if (oneSignalInitPromise) return oneSignalInitPromise;
+  if (!ONESIGNAL_APP_ID) {
+    updatePushStatus();
+    return null;
+  }
+  if (!window.isSecureContext || !("serviceWorker" in navigator) || !("Notification" in window)) {
+    updatePushStatus(t("pushUnsupported"));
+    return null;
+  }
+
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  oneSignalInitPromise = new Promise((resolve, reject) => {
+    window.OneSignalDeferred.push(async (OneSignal) => {
+      try {
+        await OneSignal.init({
+          appId: ONESIGNAL_APP_ID,
+          serviceWorkerPath: "push/onesignal/OneSignalSDKWorker.js",
+          serviceWorkerParam: { scope: "/push/onesignal/" },
+          notifyButton: { enable: false },
+          welcomeNotification: { disable: true },
+        });
+        oneSignalInitialized = true;
+        if (currentProfile?.id) {
+          await OneSignal.login(currentProfile.id);
+          OneSignal.User.addTags({
+            profile_id: currentProfile.id,
+            email: session?.user?.email || "",
+            role: currentProfile.role || "",
+          });
+        }
+        updatePushStatus();
+        resolve(OneSignal);
+      } catch (error) {
+        updatePushStatus(error.message || String(error));
+        reject(error);
+      }
+    });
+  });
+  return oneSignalInitPromise;
+}
+
+async function enablePushNotifications() {
+  const button = document.getElementById("enable-push-button");
+  button.disabled = true;
+  try {
+    if (!ONESIGNAL_APP_ID) {
+      updatePushStatus(t("pushMissingConfig"));
+      return;
+    }
+    const OneSignal = await initOneSignal();
+    if (!OneSignal) return;
+    await OneSignal.Notifications.requestPermission();
+    if (currentProfile?.id) await OneSignal.login(currentProfile.id);
+    updatePushStatus();
+  } catch (error) {
+    updatePushStatus(error.message || String(error));
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function updatePushStatus(message = "") {
+  const status = document.getElementById("push-status");
+  const button = document.getElementById("enable-push-button");
+  if (!status || !button) return;
+
+  if (message) {
+    status.textContent = message;
+    return;
+  }
+
+  if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+    status.textContent = t("pushUnsupported");
+    button.disabled = true;
+    return;
+  }
+
+  if (!ONESIGNAL_APP_ID) {
+    status.textContent = `${t("pushMissingConfig")} ${isIosDevice() ? t("pushHomeScreenHint") : ""}`.trim();
+    button.disabled = true;
+    return;
+  }
+
+  if (Notification.permission === "granted") {
+    status.textContent = oneSignalInitialized ? t("pushSubscribed") : t("pushReady");
+    button.disabled = false;
+    return;
+  }
+
+  if (Notification.permission === "denied") {
+    status.textContent = t("pushBlocked");
+    button.disabled = true;
+    return;
+  }
+
+  status.textContent = isIosDevice()
+    ? `${t("pushSetupNeeded")} ${t("pushHomeScreenHint")}`
+    : t("pushSetupNeeded");
+  button.disabled = false;
+}
+
+function isIosDevice() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 }
 
 function notifyAssignedTaskChanges() {
