@@ -105,6 +105,7 @@ const i18n = {
     cardView: "Cards",
     listView: "List",
     noTasks: "No tasks in this column.",
+    tasksLabel: "tasks",
     noDescription: "No description",
     unassigned: "Unassigned",
     undated: "Undated",
@@ -274,6 +275,7 @@ const i18n = {
     cardView: "Kart",
     listView: "Liste",
     noTasks: "Bu kolonda görev yok.",
+    tasksLabel: "görev",
     noDescription: "Açıklama yok",
     unassigned: "Atanmadı",
     undated: "Tarihsiz",
@@ -384,6 +386,7 @@ let activeColumn = "all";
 let pipelineView = localStorage.getItem("workflow-pipeline-view") || (window.matchMedia?.("(max-width: 760px)").matches ? "list" : "cards");
 let activeClientId = localStorage.getItem("workflow-active-client") || "all";
 let calendarMonth = currentMonthKey();
+let expandedCalendarDate = todayKey();
 let lang = localStorage.getItem("workflow-language") || "en";
 let pendingFiles = [];
 let pendingVoices = [];
@@ -549,12 +552,18 @@ function wireEvents() {
       return;
     }
     const button = event.target.closest("[data-calendar-task]");
-    if (!button) return;
-    selectedTaskId = button.dataset.calendarTask;
-    pendingFiles = [];
-    pendingVoices = [];
-    renderEditor();
-    openTaskModal();
+    if (button) {
+      selectedTaskId = button.dataset.calendarTask;
+      pendingFiles = [];
+      pendingVoices = [];
+      renderEditor();
+      openTaskModal();
+      return;
+    }
+    const day = event.target.closest("[data-calendar-day]");
+    if (!day) return;
+    expandedCalendarDate = day.dataset.calendarDay;
+    renderCalendar();
   });
 }
 
@@ -1036,6 +1045,7 @@ function renderCalendar() {
   const firstDay = new Date(year, month - 1, 1);
   const dayCount = new Date(year, month, 0).getDate();
   const leadingBlanks = (firstDay.getDay() + 6) % 7;
+  const visibleExpandedDate = expandedCalendarDate?.startsWith(calendarMonth) ? expandedCalendarDate : "";
   const cells = [];
   document.getElementById("calendar-title").textContent = new Intl.DateTimeFormat(lang === "tr" ? "tr-TR" : "en-US", {
     month: "long",
@@ -1046,17 +1056,56 @@ function renderCalendar() {
   for (let day = 1; day <= dayCount; day += 1) {
     const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     const dayTasks = filteredTasks().filter((task) => task.date === date);
+    const isExpanded = date === visibleExpandedDate;
     cells.push(`
-      <div class="calendar-day ${dayTasks.length ? "has-tasks" : ""}">
+      <div class="calendar-day ${dayTasks.length ? "has-tasks" : ""} ${isExpanded ? "expanded" : ""}" role="button" tabindex="0" data-calendar-day="${date}">
         <div class="calendar-date">${day}</div>
         <button class="calendar-add-button" type="button" data-calendar-add="${date}" aria-label="${escapeHtml(t("newTaskButton"))}: ${date}">+</button>
         <div class="calendar-tasks">
-          ${dayTasks.map((task) => `<button class="calendar-task priority-${escapeHtml(task.priority)}" type="button" data-calendar-task="${task.id}">${escapeHtml(task.title)}</button>`).join("")}
+          ${dayTasks.length ? `<span class="calendar-task-count">${dayTasks.length}</span>` : ""}
+          ${dayTasks.map((task) => `<button class="calendar-task priority-${escapeHtml(task.priority)}" type="button" data-calendar-task="${task.id}" title="${escapeHtml(task.title)}">${escapeHtml(task.title)}</button>`).join("")}
         </div>
       </div>
     `);
+    const isRowEnd = (leadingBlanks + day) % 7 === 0 || day === dayCount;
+    if (isRowEnd && visibleExpandedDate) {
+      const [expandedDay] = visibleExpandedDate.split("-").slice(-1);
+      const expandedDayNumber = Number(expandedDay);
+      const rowStart = day - ((leadingBlanks + day - 1) % 7);
+      if (expandedDayNumber >= rowStart && expandedDayNumber <= day) {
+        const expandedTasks = filteredTasks().filter((task) => task.date === visibleExpandedDate);
+        cells.push(renderCalendarDayDetail(visibleExpandedDate, expandedTasks));
+      }
+    }
   }
   document.getElementById("calendar-grid").innerHTML = cells.join("");
+}
+
+function renderCalendarDayDetail(date, dayTasks) {
+  return `
+    <div class="calendar-day-detail">
+      <div class="calendar-day-detail-head">
+        <div>
+          <strong>${formatDate(date)}</strong>
+          <span>${dayTasks.length} ${t("tasksLabel")}</span>
+        </div>
+        <button class="primary-button compact" type="button" data-calendar-add="${date}">${t("newTaskButton")}</button>
+      </div>
+      <div class="calendar-day-detail-tasks">
+        ${
+          dayTasks.length
+            ? dayTasks.map((task) => `
+              <button class="calendar-expanded-task priority-${escapeHtml(task.priority)}" type="button" data-calendar-task="${task.id}">
+                <strong>${escapeHtml(task.title)}</strong>
+                <span>${escapeHtml(taskPreview(task) || stripSource(task.desc || t("noDescription")))}</span>
+                <small>${priorityLabel(task.priority)} • ${progressLabel(task.progress)}</small>
+              </button>
+            `).join("")
+            : `<p class="empty-note">${t("noTasks")}</p>`
+        }
+      </div>
+    </div>
+  `;
 }
 
 function renderEditor() {
