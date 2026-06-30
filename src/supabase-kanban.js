@@ -425,7 +425,6 @@ async function boot() {
   session = data.session;
   wireEvents();
   applyI18n();
-  registerPwaWorker();
   await renderShell();
   setInterval(refreshData, 15000);
   document.addEventListener("visibilitychange", () => {
@@ -2058,13 +2057,6 @@ async function requestBrowserNotifications() {
   }
 }
 
-function registerPwaWorker() {
-  if (!("serviceWorker" in navigator) || !window.isSecureContext) return;
-  navigator.serviceWorker.register("/pwa-sw.js").catch((error) => {
-    console.warn("PWA service worker could not be registered.", error);
-  });
-}
-
 function initOneSignal() {
   if (oneSignalInitPromise) return oneSignalInitPromise;
   if (!ONESIGNAL_APP_ID) {
@@ -2082,8 +2074,8 @@ function initOneSignal() {
       try {
         await OneSignal.init({
           appId: ONESIGNAL_APP_ID,
-          serviceWorkerPath: "push/onesignal/OneSignalSDKWorker.js",
-          serviceWorkerParam: { scope: "/push/onesignal/" },
+          serviceWorkerPath: "OneSignalSDKWorker.js",
+          serviceWorkerUpdaterPath: "OneSignalSDKUpdaterWorker.js",
           notifyButton: { enable: false },
           welcomeNotification: { disable: true },
         });
