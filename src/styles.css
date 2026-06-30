@@ -1757,6 +1757,10 @@ h1 span {
 }
 
 @media (max-width: 760px) {
+  .pipeline-shell {
+    padding-bottom: calc(86px + env(safe-area-inset-bottom));
+  }
+
   .board-toolbar,
   .session-bar,
   .voice-box,
@@ -2445,20 +2449,29 @@ h1 span {
   }
 
   .calendar-panel .board-toolbar {
-    flex-direction: row;
-    align-items: center;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
     gap: 8px;
     margin-bottom: 10px;
     padding-bottom: 10px;
   }
 
   .calendar-panel .toolbar-actions {
-    width: auto;
-    flex: 0 0 auto;
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr) 38px 38px;
+    width: 100%;
+    gap: 8px;
   }
 
   .calendar-panel .toolbar-actions > * {
+    min-width: 0;
     flex: 0 0 auto;
+  }
+
+  .calendar-panel .toolbar-select {
+    min-width: 0;
   }
 
   .calendar-panel .icon-button {
@@ -2508,29 +2521,93 @@ h1 span {
   }
 
   .calendar-task {
-    min-height: 18px;
-    padding: 2px 4px;
+    width: 16px;
+    height: 16px;
+    min-height: 16px;
     overflow: hidden;
-    font-size: 0.62rem;
-    line-height: 1.1;
-    text-overflow: ellipsis;
+    border-radius: 999px;
+    padding: 4px;
+    color: transparent;
+    font-size: 0;
+    line-height: 1;
+    text-indent: -999px;
     white-space: nowrap;
+  }
+
+  .calendar-task::before {
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #ff3ca8;
+    content: "";
+  }
+
+  .calendar-day.has-tasks {
+    border-color: rgba(255, 60, 168, 0.42);
+  }
+
+  .board-panel .toolbar-select {
+    display: none;
+  }
+
+  .board-panel .board-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .board-panel .toolbar-actions {
+    width: auto;
+    justify-content: end;
+  }
+
+  .board-panel .toolbar-actions > * {
+    flex: 0 0 auto;
+  }
+
+  .view-toggle {
+    width: auto;
+    border-radius: 999px;
+    padding: 4px;
+  }
+
+  .view-toggle .ghost-button {
+    position: relative;
+    width: 42px;
+    min-width: 42px;
+    height: 38px;
+    min-height: 38px;
+    border-radius: 999px;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .view-toggle .ghost-button span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+  }
+
+  .view-toggle .ghost-button::before {
+    color: currentColor;
+    font-size: 1.15rem;
+    line-height: 1;
+  }
+
+  #card-view-button::before {
+    content: "▦";
+  }
+
+  #list-view-button::before {
+    content: "☰";
   }
 
   .board-panel {
     padding: 10px;
-  }
-
-  .board-toolbar {
-    gap: 10px;
-  }
-
-  .view-toggle {
-    width: 100%;
-  }
-
-  .view-toggle .ghost-button {
-    min-width: 0;
   }
 
   .kanban-board.all-fit {
@@ -2552,6 +2629,30 @@ h1 span {
 
   .task-card {
     padding: 12px;
+  }
+
+  #new-task-button {
+    position: fixed;
+    right: max(18px, env(safe-area-inset-right));
+    bottom: max(18px, env(safe-area-inset-bottom));
+    z-index: 40;
+    display: grid;
+    width: 58px;
+    height: 58px;
+    min-height: 58px;
+    place-items: center;
+    border-radius: 999px;
+    padding: 0;
+    font-size: 0;
+    box-shadow: 0 18px 42px rgba(255, 31, 122, 0.34);
+  }
+
+  #new-task-button::before {
+    content: "+";
+    font-family: var(--display-font);
+    font-size: 2.1rem;
+    font-weight: 900;
+    line-height: 1;
   }
 
   .task-modal {
