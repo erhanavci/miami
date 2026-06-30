@@ -49,6 +49,13 @@ const i18n = {
     currentUser: "Active user",
     logout: "Logout",
     calendarLabel: "Calendar",
+    clientLabel: "Company",
+    clientFilterLabel: "Company",
+    allClients: "All companies",
+    noClient: "No company",
+    clientManagementTitle: "Companies",
+    clientPlaceholder: "Company name",
+    noClients: "No companies yet.",
     weekdayMon: "Mon",
     weekdayTue: "Tue",
     weekdayWed: "Wed",
@@ -201,6 +208,13 @@ const i18n = {
     currentUser: "Aktif kullanıcı",
     logout: "Çıkış",
     calendarLabel: "Takvim",
+    clientLabel: "Firma",
+    clientFilterLabel: "Firma",
+    allClients: "Tüm firmalar",
+    noClient: "Firma yok",
+    clientManagementTitle: "Firmalar",
+    clientPlaceholder: "Firma adı",
+    noClients: "Henüz firma yok.",
     weekdayMon: "Pzt",
     weekdayTue: "Sal",
     weekdayWed: "Çar",
@@ -340,11 +354,14 @@ const importedTasks = [];
 let session = null;
 let currentProfile = null;
 let profiles = [];
+let clients = [];
+let clientsEnabled = false;
 let tasks = [];
 let activities = [];
 let selectedTaskId = "";
 let activeColumn = "all";
 let pipelineView = localStorage.getItem("workflow-pipeline-view") || "cards";
+let activeClientId = localStorage.getItem("workflow-active-client") || "all";
 let calendarMonth = currentMonthKey();
 let lang = localStorage.getItem("workflow-language") || "en";
 let pendingFiles = [];
@@ -368,6 +385,7 @@ const authMessage = document.getElementById("auth-message");
 const board = document.getElementById("kanban-board");
 const taskForm = document.getElementById("task-form");
 const userForm = document.getElementById("user-form");
+const clientForm = document.getElementById("client-form");
 const recordButton = document.getElementById("record-button");
 const voiceStatus = document.getElementById("voice-status");
 const taskModal = document.getElementById("task-modal");
@@ -432,6 +450,8 @@ function wireEvents() {
   });
   document.getElementById("calendar-prev").addEventListener("click", () => moveCalendarMonth(-1));
   document.getElementById("calendar-next").addEventListener("click", () => moveCalendarMonth(1));
+  document.getElementById("calendar-client-filter").addEventListener("change", updateClientFilter);
+  document.getElementById("pipeline-client-filter").addEventListener("change", updateClientFilter);
   document.getElementById("task-files").addEventListener("change", (event) => {
     pendingFiles = Array.from(event.target.files || []);
     renderAssets(getSelectedTask());
@@ -458,6 +478,7 @@ function wireEvents() {
   });
   taskForm.addEventListener("submit", saveTask);
   userForm.addEventListener("submit", addProfile);
+  clientForm.addEventListener("submit", addClient);
   profileForm.addEventListener("submit", saveProfile);
   document.getElementById("change-profile-photo").addEventListener("click", () => document.getElementById("profile-photo").click());
   document.getElementById("remove-profile-photo").addEventListener("click", removeProfilePhotoPreview);
@@ -542,6 +563,7 @@ async function logout() {
   session = null;
   currentProfile = null;
   profiles = [];
+  clients = [];
   tasks = [];
   activities = [];
   selectedTaskId = "";
@@ -596,6 +618,7 @@ async function renderShell() {
   if (!session) {
     currentProfile = null;
     profiles = [];
+    clients = [];
     tasks = [];
     activities = [];
     selectedTaskId = "";
@@ -631,6 +654,7 @@ function subscribeDataChanges() {
     .on("postgres_changes", { event: "*", schema: "public", table: "task_notes" }, refreshData)
     .on("postgres_changes", { event: "*", schema: "public", table: "task_activity" }, refreshData)
     .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, refreshData)
+    .on("postgres_changes", { event: "*", schema: "public", table: "clients" }, refreshData)
     .subscribe();
 }
 
@@ -681,8 +705,9 @@ async function seedImportedTasks() {
 }
 
 async function loadData() {
-  const [profileResult, taskResult, assigneeResult, fileResult, voiceResult, noteResult, activityResult] = await Promise.all([
+  const [profileResult, clientResult, taskResult, assigneeResult, fileResult, voiceResult, noteResult, activityResult] = await Promise.all([
     supabase.from("profiles").select("*").order("full_name"),
+    supabase.from("clients").select("*").order("name"),
     supabase.from("tasks").select("*").order("task_date", { ascending: true, nullsFirst: false }),
     supabase.from("task_assignees").select("*"),
     supabase.from("task_files").select("*"),
@@ -697,6 +722,12 @@ async function loadData() {
   }
 
   profiles = profileResult.data || [];
+  clientsEnabled = !clientResult.error;
+  clients = clientsEnabled ? clientResult.data || [] : [];
+  if (activeClientId !== "all" && !clients.some((client) => client.id === activeClientId)) {
+    activeClientId = "all";
+    localStorage.setItem("workflow-active-client", activeClientId);
+  }
   currentProfile = profiles.find((profile) => profile.auth_user_id === session.user.id) || currentProfile;
   const assigneesByTask = groupBy(assigneeResult.data || [], "task_id");
   const filesByTask = groupBy(fileResult.data || [], "task_id");
@@ -716,6 +747,7 @@ async function loadData() {
     googleMeetEnd: task.google_meet_end || "",
     priority: task.priority || "medium",
     progress: task.progress_status || "ongoing",
+    clientId: task.client_id || "",
     createdBy: task.created_by || "",
     assignees: defaultAssignees((assigneesByTask[task.id] || []).map((row) => row.user_id)),
     files: filesByTask[task.id] || [],
@@ -733,6 +765,7 @@ function renderAll() {
   applyI18n();
   if (!isTaskEditorOpen) renderSelectors();
   renderUsers();
+  renderClientControls();
   renderBoard();
   renderCalendar();
   renderAdminPanel();
@@ -747,6 +780,7 @@ function renderSelectors() {
   document.getElementById("task-progress").innerHTML = progressStates
     .map((progress) => `<option value="${progress.id}">${progressLabel(progress.id)}</option>`)
     .join("");
+  renderTaskClientOptions(getSelectedTask()?.clientId || "");
   renderAssigneeChecklist(getSelectedTask()?.assignees || []);
 }
 
@@ -754,6 +788,40 @@ function renderUsers() {
   document.getElementById("user-list").innerHTML = profiles
     .map((profile) => `<span class="user-pill">${escapeHtml(profile.full_name)} / ${escapeHtml(profile.role || t("teamFallback"))}</span>`)
     .join("");
+}
+
+function renderClientControls() {
+  const options = clientFilterOptions();
+  ["calendar-client-filter", "pipeline-client-filter"].forEach((id) => {
+    const select = document.getElementById(id);
+    if (!select) return;
+    select.innerHTML = options;
+    select.value = activeClientId;
+  });
+
+  const clientList = document.getElementById("client-list");
+  if (clientList) {
+    clientList.innerHTML = clients.length
+      ? clients.map((client) => `<span class="user-pill client-pill">${escapeHtml(client.name)}</span>`).join("")
+      : `<p class="empty-note">${t("noClients")}</p>`;
+  }
+}
+
+function clientFilterOptions() {
+  return [
+    `<option value="all">${t("allClients")}</option>`,
+    ...clients.map((client) => `<option value="${client.id}">${escapeHtml(client.name)}</option>`),
+  ].join("");
+}
+
+function renderTaskClientOptions(selectedId = "") {
+  const select = document.getElementById("task-client");
+  if (!select) return;
+  select.innerHTML = [
+    `<option value="">${t("noClient")}</option>`,
+    ...clients.map((client) => `<option value="${client.id}">${escapeHtml(client.name)}</option>`),
+  ].join("");
+  select.value = selectedId || "";
 }
 
 function renderAssigneeChecklist(assignees = []) {
@@ -811,9 +879,10 @@ function renderBoard() {
     board.innerHTML = renderPipelineTable();
     return;
   }
+  const visibleTasks = filteredTasks();
   board.innerHTML = columns
     .map((column) => {
-      const columnTasks = tasks.filter((task) => task.column === column.id);
+      const columnTasks = visibleTasks.filter((task) => task.column === column.id);
       return `
         <section class="kanban-column" data-column="${column.id}">
           <button class="column-heading ${column.tone}" type="button" data-filter="${column.id}">
@@ -829,7 +898,7 @@ function renderBoard() {
 }
 
 function renderPipelineTable() {
-  const rows = [...tasks].sort((first, second) => {
+  const rows = [...filteredTasks()].sort((first, second) => {
     const firstDate = first.date || "9999-12-31";
     const secondDate = second.date || "9999-12-31";
     return firstDate.localeCompare(secondDate) || first.title.localeCompare(second.title);
@@ -845,6 +914,7 @@ function renderTaskListRow(task) {
   const completed = task.progress === "completed" ? "completed" : "";
   const assignees = task.assignees.map(profileById).filter(Boolean);
   const column = columns.find((item) => item.id === task.column);
+  const client = clientById(task.clientId);
   return `
     <div class="task-list-row priority-${escapeHtml(task.priority)} ${completed}" role="button" tabindex="0" draggable="true" data-task="${task.id}">
       <div class="task-list-day">
@@ -852,7 +922,7 @@ function renderTaskListRow(task) {
       </div>
       <div class="task-list-main">
         <strong>${escapeHtml(task.title)}</strong>
-        <span>${escapeHtml(stripSource(task.desc || t("noDescription")))}</span>
+        <span>${client ? `${escapeHtml(client.name)} • ` : ""}${escapeHtml(stripSource(task.desc || t("noDescription")))}</span>
       </div>
       <div class="task-list-status">
         <em class="progress-pill progress-${escapeHtml(task.progress)}">${progressLabel(task.progress)}</em>
@@ -871,6 +941,7 @@ function renderTaskCard(task) {
   const thumbs = task.files.filter((file) => isImageFile(file)).slice(0, 3);
   const firstVoice = task.voices.find((voice) => voice.audio_url);
   const assignees = task.assignees.map(profileById).filter(Boolean);
+  const client = clientById(task.clientId);
   return `
     <div class="task-card priority-${escapeHtml(task.priority)} ${completed} ${selected}" role="button" tabindex="0" draggable="true" data-task="${task.id}">
       <div class="task-card-topline">
@@ -880,6 +951,7 @@ function renderTaskCard(task) {
           <em class="priority-pill priority-${escapeHtml(task.priority)}">${priorityLabel(task.priority)}</em>
         </div>
       </div>
+      ${client ? `<em class="client-badge">${escapeHtml(client.name)}</em>` : ""}
       <span>${escapeHtml(stripSource(task.desc || t("noDescription")))}</span>
       ${
         thumbs.length
@@ -914,7 +986,7 @@ function renderCalendar() {
   for (let index = 0; index < leadingBlanks; index += 1) cells.push(`<div class="calendar-day muted"></div>`);
   for (let day = 1; day <= dayCount; day += 1) {
     const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    const dayTasks = tasks.filter((task) => task.date === date);
+    const dayTasks = filteredTasks().filter((task) => task.date === date);
     cells.push(`
       <div class="calendar-day ${dayTasks.length ? "has-tasks" : ""}">
         <div class="calendar-date">${day}</div>
@@ -940,6 +1012,7 @@ function renderEditor() {
   document.getElementById("task-deadline").value = task?.deadline || draftTaskDefaults.date || "";
   document.getElementById("task-priority").value = task?.priority || "medium";
   document.getElementById("task-progress").value = task?.progress || "ongoing";
+  renderTaskClientOptions(task?.clientId || draftTaskDefaults.clientId || (activeClientId !== "all" ? activeClientId : ""));
   document.getElementById("task-column").value = task?.column || defaultColumn;
   document.getElementById("delete-task-button").classList.toggle("app-hidden", !canDeleteTask(task));
   setSelectedAssignees(task?.assignees || []);
@@ -1176,6 +1249,7 @@ async function saveTask(event) {
       ? columnFromDate(document.getElementById("task-date").value)
       : document.getElementById("task-column").value,
   };
+  if (clientsEnabled) payload.client_id = document.getElementById("task-client").value || null;
   if (isNewTask) payload.created_by = session.user.id;
 
   const result = id
@@ -1457,6 +1531,25 @@ async function addProfile(event) {
   const [fullName, role = t("teamFallback")] = value.split("/").map((part) => part.trim());
   await supabase.from("profiles").insert({ full_name: fullName, role, approval_status: "approved" });
   document.getElementById("user-name").value = "";
+  await loadData();
+  renderAll();
+}
+
+async function addClient(event) {
+  event.preventDefault();
+  if (!clientsEnabled) {
+    alert("Supabase clients schema is not ready yet. Run supabase-clients.sql first.");
+    return;
+  }
+  const input = document.getElementById("client-name");
+  const name = input.value.trim();
+  if (!name) return;
+  const result = await supabase.from("clients").insert({ name, created_by: session.user.id }).select("*").single();
+  if (result.error) {
+    alert(result.error.message);
+    return;
+  }
+  input.value = "";
   await loadData();
   renderAll();
 }
@@ -1798,6 +1891,19 @@ function getSelectedTask() {
   return tasks.find((task) => task.id === selectedTaskId);
 }
 
+function updateClientFilter(event) {
+  activeClientId = event.target.value || "all";
+  localStorage.setItem("workflow-active-client", activeClientId);
+  renderClientControls();
+  renderBoard();
+  renderCalendar();
+}
+
+function filteredTasks() {
+  if (activeClientId === "all") return tasks;
+  return tasks.filter((task) => task.clientId === activeClientId);
+}
+
 function getSelectedAssignees() {
   return Array.from(document.querySelectorAll("#assignee-list input:checked")).map((option) => option.value);
 }
@@ -1818,6 +1924,10 @@ function labelAssignees(ids) {
 
 function profileById(id) {
   return profiles.find((profile) => profile.id === id);
+}
+
+function clientById(id) {
+  return clients.find((client) => client.id === id);
 }
 
 function defaultAssignees(ids = []) {
@@ -2006,6 +2116,7 @@ function taskFingerprint(task) {
     deadline: task.deadline,
     priority: task.priority,
     progress: task.progress,
+    clientId: task.clientId,
     column: task.column,
     googleMeetUrl: task.googleMeetUrl,
     assignees: [...task.assignees].sort(),

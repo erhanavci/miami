@@ -805,6 +805,30 @@ h1 span {
   gap: 10px;
 }
 
+.toolbar-select {
+  display: grid;
+  min-width: 180px;
+  gap: 5px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.toolbar-select select {
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(7, 17, 31, 0.74);
+  color: #fff;
+  padding: 8px 32px 8px 10px;
+  font: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+  outline: none;
+}
+
 .view-toggle {
   display: inline-flex;
   overflow: hidden;
@@ -1189,6 +1213,28 @@ h1 span {
   justify-content: space-between;
   gap: 8px;
   color: rgba(255, 255, 255, 0.58);
+}
+
+.client-badge {
+  width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(37, 216, 208, 0.24);
+  border-radius: 999px;
+  background: rgba(37, 216, 208, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 5px 8px;
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.client-pill {
+  border-color: rgba(37, 216, 208, 0.2);
 }
 
 .task-avatar-row {
@@ -1797,44 +1843,6 @@ h1 span {
   opacity: 0.22;
 }
 
-.behere-mark {
-  position: fixed;
-  right: clamp(14px, 2.3vw, 32px);
-  bottom: clamp(14px, 2.3vw, 32px);
-  z-index: 12;
-  display: grid;
-  gap: 0;
-  pointer-events: none;
-  color: var(--ehf-yellow);
-  font-family: var(--display-font);
-  font-size: clamp(2rem, 4vw, 4.3rem);
-  font-weight: 900;
-  letter-spacing: 0.01em;
-  line-height: 0.72;
-  text-align: right;
-  text-transform: uppercase;
-  text-shadow: 0 16px 32px rgba(0, 0, 0, 0.42);
-}
-
-.behere-mark span:first-child {
-  color: #fff;
-}
-
-.behere-mark::before {
-  position: absolute;
-  right: -18px;
-  bottom: -18px;
-  z-index: -1;
-  width: 120px;
-  aspect-ratio: 1;
-  border: 16px solid rgba(var(--ehf-yellow-rgb), 0.42);
-  border-left-color: transparent;
-  border-top-color: transparent;
-  border-radius: 50%;
-  content: "";
-  transform: rotate(-14deg);
-}
-
 .brand-lockup,
 .app-topbar,
 .auth-card-top {
@@ -2366,12 +2374,6 @@ h1 span {
     height: 64px;
   }
 
-  .behere-mark {
-    right: 12px;
-    bottom: 12px;
-    font-size: 2rem;
-    opacity: 0.42;
-  }
 }
 
 @media (max-width: 760px) {
@@ -2613,21 +2615,6 @@ h1 span {
   background: #25d8d0;
 }
 
-.behere-mark {
-  color: rgba(255, 31, 122, 0.48);
-  text-shadow: none;
-}
-
-.behere-mark span:first-child {
-  color: rgba(37, 216, 208, 0.55);
-}
-
-.behere-mark::before {
-  border-color: rgba(255, 60, 168, 0.18);
-  border-left-color: transparent;
-  border-top-color: transparent;
-}
-
 .kanban-shell h1 {
   color: var(--miami-hot);
   text-shadow: 0 10px 28px rgba(255, 31, 122, 0.16);
@@ -2808,6 +2795,27 @@ h1 span {
 .progress-pill.progress-ongoing {
   background: rgba(37, 216, 208, 0.18);
   color: #08615f;
+}
+
+.toolbar-select {
+  color: rgba(35, 18, 32, 0.62);
+}
+
+.toolbar-select select {
+  border-color: rgba(255, 60, 168, 0.22);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--miami-ink);
+}
+
+.client-badge {
+  border-color: rgba(255, 60, 168, 0.24);
+  background: rgba(255, 60, 168, 0.12);
+  color: #8a1248;
+}
+
+.client-pill {
+  background: rgba(255, 60, 168, 0.12);
+  color: #8a1248;
 }
 
 .progress-pill.progress-completed {
