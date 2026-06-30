@@ -4,6 +4,9 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const resendApiKey = Deno.env.get("RESEND_API_KEY") ?? "";
 const fromEmail = Deno.env.get("TASK_EMAIL_FROM") ?? "erhanavci@hotmail.com";
+const oneSignalAppId = Deno.env.get("ONESIGNAL_APP_ID") ?? "";
+const oneSignalRestApiKey = Deno.env.get("ONESIGNAL_REST_API_KEY") ?? "";
+const siteUrl = Deno.env.get("SITE_URL") ?? "https://miami.vercel.app";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -49,6 +52,13 @@ Deno.serve(async (request) => {
       .not("auth_user_id", "is", null);
     if (recipientError) throw recipientError;
 
+    const pushResult = await sendOneSignalPush({
+      profileIds: assigneeIds,
+      title: task.title,
+      body: task.description || `Yeni görev tanımlandı. Deadline: ${task.deadline_date ?? "-"}`,
+      url: siteUrl,
+    });
+
     const authIds = (recipients ?? []).map((profile) => profile.auth_user_id);
     const {
       data: { users },
@@ -60,8 +70,8 @@ Deno.serve(async (request) => {
       .filter((user) => authIds.includes(user.id) && user.email)
       .map((user) => user.email);
 
-    if (!emails.length) {
-      return json({ sent: 0 });
+    if (!emails.length || !resendApiKey) {
+      return json({ sent: 0, push: pushResult });
     }
 
     const response = await fetch("https://api.resend.com/emails", {
@@ -90,11 +100,47 @@ Deno.serve(async (request) => {
       throw new Error(await response.text());
     }
 
-    return json({ sent: emails.length });
+    return json({ sent: emails.length, push: pushResult });
   } catch (error) {
     return json({ error: error.message }, 400);
   }
 });
+
+async function sendOneSignalPush(payload: { profileIds: string[]; title: string; body: string; url: string }) {
+  if (!oneSignalAppId || !oneSignalRestApiKey || !payload.profileIds.length) {
+    return { sent: 0, skipped: true };
+  }
+
+  const response = await fetch("https://api.onesignal.com/notifications", {
+    method: "POST",
+    headers: {
+      Authorization: `Key ${oneSignalRestApiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      app_id: oneSignalAppId,
+      target_channel: "push",
+      include_aliases: {
+        external_id: payload.profileIds,
+      },
+      headings: {
+        en: payload.title,
+        tr: payload.title,
+      },
+      contents: {
+        en: payload.body,
+        tr: payload.body,
+      },
+      url: payload.url,
+    }),
+  });
+
+  if (!response.ok) {
+    return { sent: 0, error: await response.text() };
+  }
+
+  return response.json();
+}
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
