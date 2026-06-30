@@ -129,6 +129,10 @@
               <h2 id="calendar-title">Görev Takvimi</h2>
             </div>
             <div class="toolbar-actions">
+              <label class="toolbar-select">
+                <span data-i18n="clientFilterLabel">Company</span>
+                <select id="calendar-client-filter"></select>
+              </label>
               <button class="ghost-button icon-button" type="button" id="calendar-prev" aria-label="Önceki ay">‹</button>
               <button class="ghost-button icon-button" type="button" id="calendar-next" aria-label="Sonraki ay">›</button>
             </div>
@@ -153,6 +157,10 @@
                 <h2 id="active-view-title">Tüm Pipeline</h2>
               </div>
               <div class="toolbar-actions">
+                <label class="toolbar-select">
+                  <span data-i18n="clientFilterLabel">Company</span>
+                  <select id="pipeline-client-filter"></select>
+                </label>
                 <div class="view-toggle" aria-label="Pipeline görünümü">
                   <button class="ghost-button active" type="button" id="card-view-button" data-view-mode="cards" data-i18n="cardView">Cards</button>
                   <button class="ghost-button" type="button" id="list-view-button" data-view-mode="list" data-i18n="listView">List</button>
@@ -250,6 +258,14 @@
             </form>
             <div class="user-list" id="user-list"></div>
           </section>
+          <section class="compact-card">
+            <h3 data-i18n="clientManagementTitle">Companies</h3>
+            <form id="client-form" class="user-form">
+              <input id="client-name" type="text" placeholder="Company name" data-i18n-placeholder="clientPlaceholder" required />
+              <button class="primary-button" type="submit" data-i18n="addButton">Add</button>
+            </form>
+            <div class="user-list client-list" id="client-list"></div>
+          </section>
         </section>
       </section>
 
@@ -303,6 +319,10 @@
             </div>
 
             <div class="form-grid">
+              <label>
+                <span data-i18n="clientLabel">Company</span>
+                <select id="task-client"></select>
+              </label>
               <label>
                 <span data-i18n="priorityLabel">Priority</span>
                 <select id="task-priority"></select>
