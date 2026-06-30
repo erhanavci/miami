@@ -1708,6 +1708,40 @@ h1 span {
   padding: 10px;
 }
 
+.latest-update-cue {
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(255, 60, 168, 0.24);
+  border-radius: 8px;
+  background: rgba(255, 60, 168, 0.08);
+  padding: 10px;
+}
+
+.latest-update-cue.active {
+  border-color: rgba(255, 60, 168, 0.54);
+  box-shadow: 0 0 0 3px rgba(255, 60, 168, 0.14);
+}
+
+.latest-update-cue strong {
+  color: var(--miami-ink);
+  font-family: var(--display-font);
+  font-size: 0.86rem;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.latest-update-cue span {
+  color: rgba(36, 16, 40, 0.72);
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.note-item.recent {
+  border-color: rgba(255, 60, 168, 0.56);
+  background: rgba(255, 60, 168, 0.1);
+  box-shadow: 0 12px 30px rgba(255, 60, 168, 0.12);
+}
+
 .note-item p {
   margin: 0;
   color: rgba(255, 255, 255, 0.84);
@@ -2499,51 +2533,57 @@ h1 span {
     align-content: start;
     justify-items: start;
     min-height: clamp(54px, 8.2svh, 68px);
-    padding: 5px;
+    padding: 6px;
     border-radius: 7px;
   }
 
   .calendar-date {
     position: relative;
     z-index: 1;
-    display: grid;
-    width: 24px;
-    height: 24px;
-    place-items: center;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.82);
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    background: transparent;
     color: var(--miami-ink);
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size: 0.78rem;
-    font-weight: 900;
-    line-height: 1;
+    font-size: 1rem;
+    font-weight: 950;
+    line-height: 1.05;
     letter-spacing: 0;
-    box-shadow: 0 4px 10px rgba(255, 60, 168, 0.12);
+    box-shadow: none;
   }
 
   .calendar-add-button {
     top: 4px;
     right: 4px;
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
+    width: 20px;
+    height: 20px;
+    border-color: rgba(255, 60, 168, 0.38);
+    border-radius: 999px;
+    background: rgba(255, 60, 168, 0.1);
+    color: #ff1f7a;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-size: 1rem;
+    font-weight: 950;
   }
 
   .calendar-tasks {
     display: flex;
     flex-wrap: wrap;
-    gap: 3px;
-    margin-top: 4px;
+    gap: 5px;
+    margin-top: 10px;
   }
 
   .calendar-task {
-    width: 16px;
-    height: 16px;
-    min-height: 16px;
+    display: grid;
+    width: 24px;
+    height: 24px;
+    min-height: 24px;
+    place-items: center;
     overflow: hidden;
     border-radius: 999px;
-    padding: 4px;
+    padding: 0;
+    background: rgba(255, 60, 168, 0.13);
     color: transparent;
     font-size: 0;
     line-height: 1;
@@ -2553,10 +2593,11 @@ h1 span {
 
   .calendar-task::before {
     display: block;
-    width: 8px;
-    height: 8px;
+    width: 13px;
+    height: 13px;
     border-radius: 999px;
     background: #ff3ca8;
+    box-shadow: 0 5px 12px rgba(255, 60, 168, 0.28);
     content: "";
   }
 
@@ -2653,7 +2694,9 @@ h1 span {
     right: max(18px, env(safe-area-inset-right));
     bottom: max(18px, env(safe-area-inset-bottom));
     z-index: 40;
-    display: grid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 58px;
     height: 58px;
     min-height: 58px;
@@ -2666,12 +2709,14 @@ h1 span {
 
   #new-task-button::before {
     content: "+";
-    display: block;
-    margin-top: -3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: -4px 0 0;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size: 2.6rem;
-    font-weight: 1000;
-    line-height: 0.9;
+    font-size: 3rem;
+    font-weight: 950;
+    line-height: 1;
     letter-spacing: 0;
   }
 
@@ -3001,4 +3046,57 @@ h1 span {
 
 .tone-green {
   background: linear-gradient(135deg, #1dd1a1, #a3e635);
+}
+
+@media (max-width: 760px) {
+  .calendar-date {
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--miami-ink);
+    font-size: 1rem;
+    line-height: 1.05;
+  }
+
+  .calendar-add-button {
+    display: grid;
+    width: 20px;
+    height: 20px;
+    place-items: center;
+    border-color: rgba(255, 60, 168, 0.38);
+    border-radius: 999px;
+    background: rgba(255, 60, 168, 0.12);
+    color: #ff1f7a;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 1rem;
+    font-weight: 950;
+    line-height: 1;
+    box-shadow: none;
+  }
+
+  .calendar-task {
+    display: grid;
+    width: 24px;
+    height: 24px;
+    min-height: 24px;
+    place-items: center;
+    border-radius: 999px;
+    padding: 0;
+    color: transparent;
+    font-size: 0;
+    line-height: 1;
+    text-indent: -999px;
+  }
+
+  .calendar-task::before {
+    display: block;
+    width: 13px;
+    height: 13px;
+    border-radius: 999px;
+    background: #ff3ca8;
+    box-shadow: 0 5px 12px rgba(255, 60, 168, 0.28);
+    content: "";
+  }
 }

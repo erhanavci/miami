@@ -178,6 +178,7 @@ const i18n = {
     pushUnsupported: "This browser does not support push notifications.",
     pushHomeScreenHint: "On iPhone: Share > Add to Home Screen, then open the app from the home screen.",
     noNotifications: "No notifications yet.",
+    latestUpdate: "Latest update",
     markRead: "Mark read",
     notificationDelete: "Delete",
     deadlineTomorrowTitle: "Deadline tomorrow",
@@ -346,6 +347,7 @@ const i18n = {
     pushUnsupported: "Bu tarayıcı push bildirim desteklemiyor.",
     pushHomeScreenHint: "iPhone'da: Paylaş > Ana Ekrana Ekle, sonra uygulamayı ana ekrandan aç.",
     noNotifications: "Henüz bildirim yok.",
+    latestUpdate: "Son güncelleme",
     markRead: "Okundu",
     notificationDelete: "Sil",
     deadlineTomorrowTitle: "Deadline yarın",
@@ -393,6 +395,8 @@ let activityBaselineReady = false;
 let dataChannel = null;
 let taskFingerprints = new Map();
 let recentLocalEdits = new Set();
+let pendingDeepLinkedTask = null;
+let highlightedTaskId = "";
 let profilePhotoMarkedForRemoval = false;
 let profilePreviewObjectUrl = "";
 let googleConnected = null;
@@ -421,6 +425,7 @@ const profileForm = document.getElementById("profile-form");
 boot();
 
 async function boot() {
+  captureDeepLinkedTask();
   const { data } = await supabase.auth.getSession();
   session = data.session;
   wireEvents();
@@ -523,12 +528,8 @@ function wireEvents() {
     const button = event.target.closest("[data-notification-task]");
     if (!button) return;
     markNotificationRead(button.dataset.notificationId);
-    selectedTaskId = button.dataset.notificationTask;
-    pendingFiles = [];
-    pendingVoices = [];
-    renderEditor();
     closePanel(notificationsModal);
-    openTaskModal();
+    openTaskFromNotification(button.dataset.notificationTask);
   });
   document.querySelectorAll("[data-close-panel]").forEach((button) => {
     button.addEventListener("click", (event) => closePanel(event.target.closest(".panel-modal")));
@@ -665,6 +666,7 @@ async function renderShell() {
     `${currentProfile?.full_name || session.user.email} • ${currentProfile?.role || t("teamFallback")}`;
   renderProfileShell();
   renderAll();
+  openPendingDeepLinkedTask();
 }
 
 function subscribeDataChanges() {
@@ -795,6 +797,39 @@ function renderAll() {
   renderAdminPanel();
   renderProfileShell();
   renderNotifications();
+}
+
+function captureDeepLinkedTask() {
+  const params = new URLSearchParams(window.location.search);
+  const taskId = params.get("task");
+  if (!taskId) return;
+  pendingDeepLinkedTask = { taskId };
+  highlightedTaskId = taskId;
+}
+
+function openPendingDeepLinkedTask() {
+  if (!pendingDeepLinkedTask || !tasks.some((task) => task.id === pendingDeepLinkedTask.taskId)) return;
+  openTaskFromNotification(pendingDeepLinkedTask.taskId);
+  pendingDeepLinkedTask = null;
+  const cleanUrl = new URL(window.location.href);
+  cleanUrl.searchParams.delete("task");
+  cleanUrl.searchParams.delete("notice");
+  window.history.replaceState({}, "", cleanUrl);
+}
+
+function openTaskFromNotification(taskId) {
+  if (!taskId || !tasks.some((task) => task.id === taskId)) return;
+  selectedTaskId = taskId;
+  highlightedTaskId = taskId;
+  pendingFiles = [];
+  pendingVoices = [];
+  renderEditor();
+  openTaskModal();
+}
+
+function latestTaskActivity(task) {
+  if (!task) return null;
+  return activities.find((activity) => activity.task_id === task.id) || null;
 }
 
 function renderSelectors() {
@@ -1149,14 +1184,28 @@ function renderVoice(voice) {
 
 function renderNotes(task) {
   const notes = task?.notes || [];
+  const latest = latestTaskActivity(task);
   document.getElementById("task-note").value = "";
   document.getElementById("note-list").innerHTML = notes.length
-    ? notes.map(renderNote).join("")
-    : `<p class="empty-note">${t("noNotes")}</p>`;
+    ? `${renderLatestUpdateCue(task, latest)}${notes.map((note, index) => renderNote(note, index, latest)).join("")}`
+    : `${renderLatestUpdateCue(task, latest)}<p class="empty-note">${t("noNotes")}</p>`;
 }
 
-function renderNote(note) {
+function renderLatestUpdateCue(task, latest) {
+  if (!task || !latest) return "";
+  const actor = labelAuthUser(latest.actor_id) || t("teamFallback");
+  const isActive = highlightedTaskId === task.id;
+  return `
+    <div class="latest-update-cue ${isActive ? "active" : ""}">
+      <strong>${t("latestUpdate")}</strong>
+      <span>${escapeHtml(actor)} ${escapeHtml(activityLabel(latest.action))}${latest.created_at ? ` • ${escapeHtml(formatDateTime(latest.created_at))}` : ""}</span>
+    </div>
+  `;
+}
+
+function renderNote(note, index = 0, latest = null) {
   const meta = [labelAuthUser(note.created_by), note.created_at ? formatDateTime(note.created_at) : ""].filter(Boolean).join(" • ");
+  const isRecent = highlightedTaskId === selectedTaskId && index === 0 && latest?.action?.startsWith("note_");
   const actions = canManageOwnItem(note)
     ? `
       <div class="note-actions">
@@ -1174,7 +1223,7 @@ function renderNote(note) {
     `
     : "";
   return `
-    <article class="note-item">
+    <article class="note-item ${isRecent ? "recent" : ""}">
       <div class="note-body">
         <p>${escapeHtml(note.note_text || "")}</p>
         ${meta ? `<small>${escapeHtml(meta)}</small>` : ""}
@@ -2185,11 +2234,12 @@ function notifyAssignedTaskChanges() {
 
     if ((isNew || isChanged) && !recentLocalEdits.has(task.id)) {
       seen.add(task.id);
-      new Notification(task.title, {
+      const notification = new Notification(task.title, {
         body: isNew
           ? taskPreview(task) || t("assignedNotificationTitle")
           : `${t("taskUpdatedNotificationTitle")}${taskPreview(task) ? ` • ${taskPreview(task)}` : ""}`,
       });
+      bindNotificationClick(notification, task.id);
     }
 
     taskFingerprints.set(task.id, nextFingerprint);
@@ -2209,9 +2259,10 @@ function notifyDeadlineReminders() {
     .filter((task) => task.deadline && task.progress !== "completed" && daysBetween(today, task.deadline) === 1)
     .forEach((task) => {
       if (sent.has(task.id)) return;
-      new Notification(task.title, {
+      const notification = new Notification(task.title, {
         body: `${t("deadlineTomorrowTitle")} • ${t("due")}: ${formatDate(task.deadline)}${taskPreview(task) ? ` • ${taskPreview(task)}` : ""}`,
       });
+      bindNotificationClick(notification, task.id);
       sent.add(task.id);
     });
   localStorage.setItem(key, JSON.stringify([...sent]));
@@ -2233,9 +2284,23 @@ function notifyActivityChanges() {
   notices.forEach((notice) => {
     if (seen.has(notice.id)) return;
     seen.add(notice.id);
-    new Notification(notice.title, { body: notice.body });
+    const notification = new Notification(notice.title, { body: notice.body });
+    bindNotificationClick(notification, notice.task.id);
   });
   localStorage.setItem(key, JSON.stringify([...seen]));
+}
+
+function bindNotificationClick(notification, taskId) {
+  notification.onclick = () => {
+    window.focus?.();
+    if (tasks.some((task) => task.id === taskId)) {
+      openTaskFromNotification(taskId);
+      return;
+    }
+    const url = new URL(window.location.href);
+    url.searchParams.set("task", taskId);
+    window.location.href = url.toString();
+  };
 }
 
 function taskFingerprint(task) {
