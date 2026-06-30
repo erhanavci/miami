@@ -59,6 +59,47 @@ supabase functions deploy task-assignment-email
 
 The domain behind `erhanavci@hotmail.com` must be verified in the email provider. Supabase's Auth SMTP settings send login/confirmation emails only; they do not send custom task assignment emails by themselves.
 
+## Mobile push notifications
+
+The app is PWA-ready and includes OneSignal Web Push support.
+
+OneSignal setup:
+
+1. Create a OneSignal Web Push app.
+2. Integration type: `Custom Code`.
+3. Site URL: your exact Vercel domain, for example `https://miami.vercel.app`.
+4. Service worker path: `push/onesignal/`
+5. Service worker file: `OneSignalSDKWorker.js`
+6. Service worker scope: `/push/onesignal/`
+7. Copy the OneSignal App ID into `ONESIGNAL_APP_ID` in `src/supabase-kanban.js`.
+
+Set these Supabase Edge Function secrets:
+
+```bash
+supabase secrets set ONESIGNAL_APP_ID=your_onesignal_app_id
+supabase secrets set ONESIGNAL_REST_API_KEY=your_onesignal_rest_api_key
+supabase secrets set SITE_URL=https://miami.vercel.app
+```
+
+Deploy the updated notification function:
+
+```bash
+supabase functions deploy task-assignment-email
+supabase functions deploy deadline-push
+```
+
+iPhone users must open the site, tap Share, choose Add to Home Screen, open the app from the home screen, then tap the notification button in the app. This is required by iOS for web push.
+
+For deadline reminders, schedule `deadline-push` to run once every morning from Supabase:
+
+Project -> Edge Functions -> deadline-push -> Schedule
+
+Example cron for every day at 09:00 Turkey time during summer:
+
+```text
+0 6 * * *
+```
+
 ## Admin approval panel
 
 Admin approval is handled in the app's admin panel. New users are saved with:

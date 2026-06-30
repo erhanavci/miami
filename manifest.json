@@ -1,0 +1,19 @@
+{
+  "name": "Miami Workflow",
+  "short_name": "Miami",
+  "description": "Miami Workflow task, calendar and team notification workspace.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fff4fa",
+  "theme_color": "#ff3ca8",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/assets/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -3,8 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ff3ca8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Miami Workflow" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>Miami Workflow</title>
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="apple-touch-icon" href="./assets/app-icon.svg" />
     <link rel="stylesheet" href="./src/styles.css" />
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   </head>
   <body>
     <main class="pipeline-shell kanban-shell">
@@ -279,6 +286,11 @@
             </div>
             <button class="ghost-button icon-button" type="button" data-close-panel aria-label="Close">×</button>
           </div>
+          <section class="compact-card push-card">
+            <h3 data-i18n="pushTitle">Mobile Notifications</h3>
+            <p class="empty-note" id="push-status" data-i18n="pushSetupNeeded">Add the app to your phone home screen, then enable notifications.</p>
+            <button class="primary-button" type="button" id="enable-push-button" data-i18n="enablePushButton">Enable Notifications</button>
+          </section>
           <div class="notification-list" id="notification-list"></div>
         </section>
       </section>
