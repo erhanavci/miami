@@ -68,9 +68,9 @@ OneSignal setup:
 1. Create a OneSignal Web Push app.
 2. Integration type: `Custom Code`.
 3. Site URL: your exact Vercel domain, for example `https://miami.vercel.app`.
-4. Service worker path: `push/onesignal/`
+4. Service worker path: `/`
 5. Service worker file: `OneSignalSDKWorker.js`
-6. Service worker scope: `/push/onesignal/`
+6. Service worker scope: `/`
 7. Copy the OneSignal App ID into `ONESIGNAL_APP_ID` in `src/supabase-kanban.js`.
 
 Set these Supabase Edge Function secrets:
