@@ -169,8 +169,12 @@
                   <select id="pipeline-client-filter"></select>
                 </label>
                 <div class="view-toggle" aria-label="Pipeline görünümü">
-                  <button class="ghost-button active" type="button" id="card-view-button" data-view-mode="cards" data-i18n="cardView">Cards</button>
-                  <button class="ghost-button" type="button" id="list-view-button" data-view-mode="list" data-i18n="listView">List</button>
+                  <button class="ghost-button active" type="button" id="card-view-button" data-view-mode="cards" aria-label="Cards">
+                    <span data-i18n="cardView">Cards</span>
+                  </button>
+                  <button class="ghost-button" type="button" id="list-view-button" data-view-mode="list" aria-label="List">
+                    <span data-i18n="listView">List</span>
+                  </button>
                 </div>
                 <button class="primary-button" type="button" id="new-task-button" data-i18n="newTaskButton">+ Task</button>
               </div>
