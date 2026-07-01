@@ -1679,6 +1679,12 @@ h1 span {
   width: 100%;
 }
 
+.voice-note a {
+  color: #8a1248;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
 .asset-remove {
   min-width: 54px;
   border: 1px solid rgba(239, 68, 68, 0.48);
@@ -2164,6 +2170,45 @@ h1 span {
 .approval-list {
   display: grid;
   gap: 10px;
+}
+
+.archive-list {
+  display: grid;
+  gap: 10px;
+}
+
+.archive-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(255, 60, 168, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.68);
+  padding: 10px;
+}
+
+.archive-task {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--miami-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.archive-task strong {
+  overflow: hidden;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.archive-task span {
+  color: rgba(36, 16, 40, 0.58);
+  font-size: 0.82rem;
 }
 
 .approval-row {

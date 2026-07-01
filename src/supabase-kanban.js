@@ -87,6 +87,14 @@ const i18n = {
     recording: "Recording",
     micNeeded: "Microphone permission required",
     clearButton: "Clear",
+    archiveLabel: "Archive",
+    archiveTitle: "Archived Tasks",
+    archiveTaskButton: "Archive",
+    restoreTaskButton: "Restore",
+    noArchivedTasks: "No archived tasks.",
+    archiveConfirm: "Archive this task?",
+    grantAdmin: "Make Admin",
+    adminGranted: "Admin",
     deleteButton: "Delete",
     deleteConfirm: "Delete this task?",
     removeAsset: "Remove",
@@ -143,6 +151,7 @@ const i18n = {
     noVoices: "No voice notes yet.",
     fileFallback: "File",
     voiceFallback: "Voice note",
+    openVoice: "Open audio",
     teamFallback: "Team",
     loadingLogin: "Signing in...",
     loadingRegister: "Creating account...",
@@ -257,6 +266,14 @@ const i18n = {
     recording: "Kayıt alınıyor",
     micNeeded: "Mikrofon izni gerekli",
     clearButton: "Temizle",
+    archiveLabel: "Arşiv",
+    archiveTitle: "Arşivlenen Görevler",
+    archiveTaskButton: "Arşive Ekle",
+    restoreTaskButton: "Geri Al",
+    noArchivedTasks: "Arşivde görev yok.",
+    archiveConfirm: "Bu görev arşive eklensin mi?",
+    grantAdmin: "Admin Yap",
+    adminGranted: "Admin",
     deleteButton: "Sil",
     deleteConfirm: "Bu görev silinsin mi?",
     removeAsset: "Sil",
@@ -313,6 +330,7 @@ const i18n = {
     noVoices: "Henüz sesli not yok.",
     fileFallback: "Dosya",
     voiceFallback: "Sesli not",
+    openVoice: "Sesi aç",
     teamFallback: "Ekip",
     loadingLogin: "Giriş yapılıyor...",
     loadingRegister: "Üyelik oluşturuluyor...",
@@ -419,9 +437,11 @@ const voiceStatus = document.getElementById("voice-status");
 const taskModal = document.getElementById("task-modal");
 const profileModal = document.getElementById("profile-modal");
 const adminModal = document.getElementById("admin-modal");
+const archiveModal = document.getElementById("archive-modal");
 const notificationsModal = document.getElementById("notifications-modal");
 const profileButton = document.getElementById("profile-button");
 const adminPageButton = document.getElementById("admin-page-button");
+const archiveButton = document.getElementById("archive-button");
 const notificationButton = document.getElementById("notification-button");
 const profileForm = document.getElementById("profile-form");
 
@@ -461,14 +481,7 @@ function wireEvents() {
   document.getElementById("logout-button").addEventListener("click", logout);
   document.getElementById("pending-logout-button").addEventListener("click", logout);
   document.getElementById("new-task-button").addEventListener("click", () => openNewTask());
-  document.getElementById("clear-button").addEventListener("click", () => {
-    selectedTaskId = "";
-    pendingFiles = [];
-    pendingVoices = [];
-    draftTaskDefaults = {};
-    taskForm.reset();
-    renderEditor();
-  });
+  document.getElementById("archive-task-button").addEventListener("click", archiveSelectedTask);
   document.getElementById("delete-task-button").addEventListener("click", deleteSelectedTask);
   document.getElementById("close-task-modal").addEventListener("click", closeTaskModal);
   document.getElementById("task-modal-backdrop").addEventListener("click", closeTaskModal);
@@ -513,8 +526,14 @@ function wireEvents() {
   document.getElementById("remove-profile-photo").addEventListener("click", removeProfilePhotoPreview);
   document.getElementById("profile-photo").addEventListener("change", updateProfilePhotoPreview);
   document.getElementById("approval-list").addEventListener("click", approveUser);
+  document.getElementById("user-list").addEventListener("click", grantAdmin);
   profileButton.addEventListener("click", openProfileModal);
   adminPageButton.addEventListener("click", () => openPanel(adminModal));
+  archiveButton.addEventListener("click", () => {
+    renderArchivePanel();
+    openPanel(archiveModal);
+  });
+  document.getElementById("archive-list").addEventListener("click", handleArchiveAction);
   notificationButton.addEventListener("click", () => {
     renderNotifications();
     updatePushStatus();
@@ -784,6 +803,8 @@ async function loadData() {
     progress: task.progress_status || "ongoing",
     clientId: task.client_id || "",
     createdBy: task.created_by || "",
+    archived: Boolean(task.archived_at),
+    archivedAt: task.archived_at || "",
     assignees: defaultAssignees((assigneesByTask[task.id] || []).map((row) => row.user_id)),
     files: filesByTask[task.id] || [],
     voices: voicesByTask[task.id] || [],
@@ -804,6 +825,7 @@ function renderAll() {
   renderBoard();
   renderCalendar();
   renderAdminPanel();
+  renderArchivePanel();
   renderProfileShell();
   renderNotifications();
 }
@@ -854,7 +876,19 @@ function renderSelectors() {
 
 function renderUsers() {
   document.getElementById("user-list").innerHTML = profiles
-    .map((profile) => `<span class="user-pill">${escapeHtml(profile.full_name)} / ${escapeHtml(profile.role || t("teamFallback"))}</span>`)
+    .map((profile) => `
+      <div class="approval-row">
+        <div>
+          <strong>${escapeHtml(profile.full_name)}</strong>
+          <span>${escapeHtml(profile.role || t("teamFallback"))}${profile.is_admin ? ` • ${t("adminGranted")}` : ""}</span>
+        </div>
+        ${
+          currentProfile?.is_admin && !profile.is_admin
+            ? `<button class="ghost-button" type="button" data-grant-admin="${profile.id}">${t("grantAdmin")}</button>`
+            : ""
+        }
+      </div>
+    `)
     .join("");
 }
 
@@ -933,6 +967,30 @@ function renderAdminPanel() {
         )
         .join("")
     : `<p class="empty-note">${t("noPendingUsers")}</p>`;
+}
+
+function renderArchivePanel() {
+  const list = document.getElementById("archive-list");
+  if (!list) return;
+  const archivedTasks = tasks
+    .filter((task) => task.archived)
+    .filter((task) => activeClientId === "all" || task.clientId === activeClientId)
+    .sort((first, second) => String(second.archivedAt || "").localeCompare(String(first.archivedAt || "")));
+
+  list.innerHTML = archivedTasks.length
+    ? archivedTasks.map((task) => {
+        const client = clientById(task.clientId);
+        return `
+          <div class="archive-row">
+            <button class="archive-task" type="button" data-archive-open="${task.id}">
+              <strong>${escapeHtml(task.title)}</strong>
+              <span>${client ? `${escapeHtml(client.name)} • ` : ""}${task.date ? formatDate(task.date) : t("undated")}</span>
+            </button>
+            <button class="ghost-button" type="button" data-restore-task="${task.id}">${t("restoreTaskButton")}</button>
+          </div>
+        `;
+      }).join("")
+    : `<p class="empty-note">${t("noArchivedTasks")}</p>`;
 }
 
 function renderBoard() {
@@ -1123,6 +1181,7 @@ function renderEditor() {
   renderTaskClientOptions(task?.clientId || draftTaskDefaults.clientId || (activeClientId !== "all" ? activeClientId : ""));
   document.getElementById("task-column").value = task?.column || defaultColumn;
   document.getElementById("delete-task-button").classList.toggle("app-hidden", !canDeleteTask(task));
+  document.getElementById("archive-task-button").classList.toggle("app-hidden", !task || task.archived);
   setSelectedAssignees(task?.assignees || []);
   renderAssets(task);
   renderMeet(task);
@@ -1225,6 +1284,7 @@ function renderVoice(voice) {
         ${voice.audio_url ? `<audio controls preload="metadata" src="${voice.audio_url}"></audio>` : ""}
         <small>${escapeHtml(voice.file_name || t("voiceFallback"))}</small>
         ${meta ? `<small>${escapeHtml(meta)}</small>` : ""}
+        ${voice.audio_url ? `<a href="${voice.audio_url}" target="_blank" rel="noreferrer">${t("openVoice")}</a>` : ""}
       </div>
       ${action}
     </div>
@@ -1597,6 +1657,68 @@ async function deleteSelectedTask() {
   closeTaskModal();
 }
 
+async function archiveSelectedTask() {
+  const task = getSelectedTask();
+  if (!task || task.archived) return;
+  if (!confirm(t("archiveConfirm"))) return;
+
+  const { error } = await supabase
+    .from("tasks")
+    .update({ archived_at: new Date().toISOString() })
+    .eq("id", task.id);
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  selectedTaskId = "";
+  pendingFiles = [];
+  pendingVoices = [];
+  taskForm.reset();
+  await loadData();
+  renderAll();
+  closeTaskModal();
+}
+
+async function handleArchiveAction(event) {
+  const restoreButton = event.target.closest("[data-restore-task]");
+  const openButton = event.target.closest("[data-archive-open]");
+
+  if (restoreButton) {
+    const { error } = await supabase.from("tasks").update({ archived_at: null }).eq("id", restoreButton.dataset.restoreTask);
+    if (error) {
+      alert(error.message);
+      return;
+    }
+    await loadData();
+    renderAll();
+    return;
+  }
+
+  if (!openButton) return;
+  selectedTaskId = openButton.dataset.archiveOpen;
+  pendingFiles = [];
+  pendingVoices = [];
+  renderEditor();
+  closePanel(archiveModal);
+  openTaskModal();
+}
+
+async function grantAdmin(event) {
+  const button = event.target.closest("[data-grant-admin]");
+  if (!button || !currentProfile?.is_admin) return;
+  const { error } = await supabase
+    .from("profiles")
+    .update({ is_admin: true, approval_status: "approved" })
+    .eq("id", button.dataset.grantAdmin);
+  if (error) {
+    alert(error.message);
+    return;
+  }
+  await loadData();
+  renderAll();
+}
+
 async function uploadPendingAssets(taskId, files = pendingFiles, voices = pendingVoices) {
   for (const file of files) {
     const path = `${taskId}/files/${crypto.randomUUID()}-${safeName(file.name)}`;
@@ -1816,6 +1938,7 @@ function currentNotifications() {
   if (!currentProfile) return [];
   const today = todayKey();
   return tasks
+    .filter((task) => !task.archived)
     .filter((task) => task.assignees.includes(currentProfile.id))
     .flatMap((task) => {
       const notices = [{ id: notificationId("assigned", task), type: "assigned", task, title: task.title, body: taskPreview(task) }];
@@ -1833,7 +1956,7 @@ function activityNotifications() {
   if (!currentProfile) return [];
   return activities
     .map((activity) => ({ activity, task: tasks.find((task) => task.id === activity.task_id) }))
-    .filter(({ activity, task }) => task && task.assignees.includes(currentProfile.id) && activity.actor_id !== session.user.id)
+    .filter(({ activity, task }) => task && !task.archived && task.assignees.includes(currentProfile.id) && activity.actor_id !== session.user.id)
     .map(({ activity, task }) => {
       const actor = labelAuthUser(activity.actor_id) || t("teamFallback");
       return {
@@ -2022,8 +2145,9 @@ function updateClientFilter(event) {
 }
 
 function filteredTasks() {
-  if (activeClientId === "all") return tasks;
-  return tasks.filter((task) => task.clientId === activeClientId);
+  const activeTasks = tasks.filter((task) => !task.archived);
+  if (activeClientId === "all") return activeTasks;
+  return activeTasks.filter((task) => task.clientId === activeClientId);
 }
 
 function getSelectedAssignees() {
@@ -2082,7 +2206,7 @@ function renderAvatar(profile) {
 }
 
 function canDeleteTask(task) {
-  return Boolean(task && task.createdBy && task.createdBy === session?.user?.id);
+  return Boolean(task && (currentProfile?.is_admin || (task.createdBy && task.createdBy === session?.user?.id)));
 }
 
 function canManageOwnItem(item) {
@@ -2135,12 +2259,14 @@ function isImageFile(file) {
 }
 
 function getSupportedAudioType() {
-  const types = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"];
+  const types = isIosDevice()
+    ? ["audio/mp4", "audio/aac", "audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus"]
+    : ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/aac", "audio/ogg;codecs=opus"];
   return types.find((type) => window.MediaRecorder?.isTypeSupported?.(type)) || "";
 }
 
 function audioExtension(type = "") {
-  if (type.includes("mp4")) return "m4a";
+  if (type.includes("mp4") || type.includes("aac")) return "m4a";
   if (type.includes("ogg")) return "ogg";
   return "webm";
 }
