@@ -104,6 +104,7 @@
                 <em class="app-hidden" id="notification-count">0</em>
               </button>
               <button class="ghost-button app-hidden" type="button" id="admin-page-button" data-i18n="adminLabel">Admin</button>
+              <button class="ghost-button" type="button" id="archive-button" data-i18n="archiveLabel">Archive</button>
               <button class="avatar-button" type="button" id="profile-button" aria-label="Profile">
                 <img class="app-hidden" id="profile-avatar" alt="" />
                 <span id="profile-initials">EA</span>
@@ -280,6 +281,20 @@
         </section>
       </section>
 
+      <section class="panel-modal app-hidden" id="archive-modal" aria-modal="true" role="dialog" aria-labelledby="archive-title">
+        <div class="task-modal-backdrop" data-close-panel></div>
+        <section class="editor-card panel-modal-card">
+          <div class="panel-heading">
+            <div>
+              <p class="toolbar-label" data-i18n="archiveLabel">Archive</p>
+              <h2 id="archive-title" data-i18n="archiveTitle">Archived Tasks</h2>
+            </div>
+            <button class="ghost-button icon-button" type="button" data-close-panel aria-label="Close">×</button>
+          </div>
+          <div class="archive-list" id="archive-list"></div>
+        </section>
+      </section>
+
       <section class="panel-modal app-hidden" id="notifications-modal" aria-modal="true" role="dialog" aria-labelledby="notifications-title">
         <div class="task-modal-backdrop" data-close-panel></div>
         <section class="editor-card panel-modal-card narrow">
@@ -425,7 +440,7 @@
 
             <div class="form-actions">
               <button class="danger-button app-hidden" type="button" id="delete-task-button" data-i18n="deleteButton">Delete</button>
-              <button class="ghost-button" type="button" id="clear-button" data-i18n="clearButton">Clear</button>
+              <button class="ghost-button app-hidden" type="button" id="archive-task-button" data-i18n="archiveTaskButton">Archive</button>
               <button class="primary-button" type="submit" data-i18n="saveButton">Save</button>
             </div>
           </form>
