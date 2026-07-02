@@ -104,6 +104,7 @@
                 <em class="app-hidden" id="notification-count">0</em>
               </button>
               <button class="ghost-button app-hidden" type="button" id="admin-page-button" data-i18n="adminLabel">Admin</button>
+              <button class="ghost-button" type="button" id="archive-button" data-i18n="archiveLabel">Archive</button>
               <button class="avatar-button" type="button" id="profile-button" aria-label="Profile">
                 <img class="app-hidden" id="profile-avatar" alt="" />
                 <span id="profile-initials">EA</span>
@@ -262,6 +263,11 @@
             <div class="approval-list" id="approval-list"></div>
           </section>
           <section class="compact-card">
+            <h3 data-i18n="pushTestTitle">Push Test</h3>
+            <button class="primary-button" type="button" id="test-push-button" data-i18n="sendTestPush">Send Test Push</button>
+            <p class="form-status" id="test-push-status"></p>
+          </section>
+          <section class="compact-card">
             <h3 data-i18n="defineUser">Define User</h3>
             <form id="user-form" class="user-form">
               <input id="user-name" type="text" placeholder="Full name / role" data-i18n-placeholder="userPlaceholder" required />
@@ -277,6 +283,20 @@
             </form>
             <div class="user-list client-list" id="client-list"></div>
           </section>
+        </section>
+      </section>
+
+      <section class="panel-modal app-hidden" id="archive-modal" aria-modal="true" role="dialog" aria-labelledby="archive-title">
+        <div class="task-modal-backdrop" data-close-panel></div>
+        <section class="editor-card panel-modal-card">
+          <div class="panel-heading">
+            <div>
+              <p class="toolbar-label" data-i18n="archiveLabel">Archive</p>
+              <h2 id="archive-title" data-i18n="archiveTitle">Archived Tasks</h2>
+            </div>
+            <button class="ghost-button icon-button" type="button" data-close-panel aria-label="Close">×</button>
+          </div>
+          <div class="archive-list" id="archive-list"></div>
         </section>
       </section>
 
@@ -425,7 +445,7 @@
 
             <div class="form-actions">
               <button class="danger-button app-hidden" type="button" id="delete-task-button" data-i18n="deleteButton">Delete</button>
-              <button class="ghost-button" type="button" id="clear-button" data-i18n="clearButton">Clear</button>
+              <button class="ghost-button app-hidden" type="button" id="archive-task-button" data-i18n="archiveTaskButton">Archive</button>
               <button class="primary-button" type="submit" data-i18n="saveButton">Save</button>
             </div>
           </form>
@@ -433,6 +453,6 @@
       </section>
     </main>
 
-    <script type="module" src="./src/supabase-kanban.js"></script>
+    <script type="module" src="./src/supabase-kanban.js?v=20260702-push-subscriptions"></script>
   </body>
 </html>
