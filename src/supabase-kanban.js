@@ -939,7 +939,7 @@ function captureDeepLinkedTask() {
 }
 
 function openPendingDeepLinkedTask() {
-  if (!pendingDeepLinkedTask || !tasks.some((task) => task.id === pendingDeepLinkedTask.taskId)) return;
+  if (!pendingDeepLinkedTask || !tasks.some((task) => task.id === pendingDeepLinkedTask.taskId && !task.archived)) return;
   openTaskFromNotification(pendingDeepLinkedTask.taskId);
   pendingDeepLinkedTask = null;
   const cleanUrl = new URL(window.location.href);
@@ -949,7 +949,7 @@ function openPendingDeepLinkedTask() {
 }
 
 function openTaskFromNotification(taskId) {
-  if (!taskId || !tasks.some((task) => task.id === taskId)) return;
+  if (!taskId || !tasks.some((task) => task.id === taskId && !task.archived)) return;
   selectedTaskId = taskId;
   highlightedTaskId = taskId;
   pendingFiles = [];
@@ -1805,11 +1805,22 @@ async function handleArchiveAction(event) {
   const openButton = event.target.closest("[data-archive-open]");
 
   if (restoreButton) {
+    const taskId = restoreButton.dataset.restoreTask;
+    const restoringTask = tasks.find((task) => task.id === taskId);
     const { error } = await supabase.from("tasks").update({ archived_at: null }).eq("id", restoreButton.dataset.restoreTask);
     if (error) {
       alert(error.message);
       return;
     }
+    if (restoringTask?.date) {
+      calendarMonth = restoringTask.date.slice(0, 7);
+      expandedCalendarDate = restoringTask.date;
+    }
+    if (restoringTask && activeClientId !== "all" && restoringTask.clientId !== activeClientId) {
+      activeClientId = restoringTask.clientId || "all";
+      localStorage.setItem("workflow-active-client", activeClientId);
+    }
+    clearTaskNotificationState(taskId);
     await loadData();
     renderAll();
     return;
@@ -2225,6 +2236,17 @@ function notificationSet(kind) {
 
 function saveNotificationSet(kind, values) {
   localStorage.setItem(notificationKey(kind), JSON.stringify([...values]));
+}
+
+function clearTaskNotificationState(taskId) {
+  if (!taskId) return;
+  ["read", "deleted"].forEach((kind) => {
+    const values = notificationSet(kind);
+    [...values]
+      .filter((id) => id.includes(taskId))
+      .forEach((id) => values.delete(id));
+    saveNotificationSet(kind, values);
+  });
 }
 
 function markNotificationRead(id) {
