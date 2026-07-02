@@ -1334,7 +1334,7 @@ function renderNote(note, index = 0, latest = null) {
   return `
     <article class="note-item ${isRecent ? "recent" : ""}">
       <div class="note-body">
-        <p>${escapeHtml(note.note_text || "")}</p>
+        <p>${linkifyText(note.note_text || "")}</p>
         ${meta ? `<small>${escapeHtml(meta)}</small>` : ""}
       </div>
       ${actions}
@@ -2597,5 +2597,15 @@ function escapeHtml(value = "") {
   return String(value).replace(/[&<>"']/g, (char) => {
     const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" };
     return map[char];
+  });
+}
+
+function linkifyText(value = "") {
+  const urlPattern = /(https?:\/\/[^\s<]+|www\.[^\s<]+)/gi;
+  return escapeHtml(value).replace(urlPattern, (match) => {
+    const trailing = match.match(/[).,!?:;]+$/)?.[0] || "";
+    const clean = trailing ? match.slice(0, -trailing.length) : match;
+    const href = clean.startsWith("www.") ? `https://${clean}` : clean;
+    return `<a href="${href}" target="_blank" rel="noreferrer">${clean}</a>${trailing}`;
   });
 }

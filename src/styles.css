@@ -1763,6 +1763,14 @@ h1 span {
   line-height: 1.45;
 }
 
+.note-item p a {
+  color: #8a1248;
+  font-weight: 850;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
 .note-item small {
   color: rgba(255, 255, 255, 0.52);
 }
