@@ -2474,6 +2474,47 @@ async function syncOneSignalUser(OneSignal) {
   OneSignal.User?.addAlias?.("profile_id", currentProfile.id);
   if (session?.user?.id) OneSignal.User?.addAlias?.("auth_user_id", session.user.id);
   await OneSignal.User?.PushSubscription?.optIn?.();
+  await savePushSubscription(OneSignal);
+}
+
+async function savePushSubscription(OneSignal) {
+  const subscriptionId = await waitForOneSignalSubscriptionId(OneSignal);
+  if (!subscriptionId || !currentProfile?.id || !session?.user?.id) return;
+  const { error } = await supabase.from("push_subscriptions").upsert(
+    {
+      profile_id: currentProfile.id,
+      auth_user_id: session.user.id,
+      subscription_id: subscriptionId,
+      user_agent: navigator.userAgent,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "subscription_id" },
+  );
+  if (error) console.warn("Push subscription could not be saved", error);
+}
+
+async function waitForOneSignalSubscriptionId(OneSignal) {
+  let subscriptionId = await getOneSignalSubscriptionId(OneSignal);
+  if (subscriptionId) return subscriptionId;
+  await new Promise((resolve) => setTimeout(resolve, 800));
+  subscriptionId = await getOneSignalSubscriptionId(OneSignal);
+  return subscriptionId;
+}
+
+async function getOneSignalSubscriptionId(OneSignal) {
+  const subscription = OneSignal?.User?.PushSubscription;
+  if (!subscription) return "";
+  const candidates = [
+    subscription.id,
+    subscription.subscriptionId,
+    subscription._id,
+    typeof subscription.getId === "function" ? subscription.getId() : "",
+  ];
+  for (const candidate of candidates) {
+    const value = await Promise.resolve(candidate);
+    if (value) return value;
+  }
+  return "";
 }
 
 function updatePushStatus(message = "") {
