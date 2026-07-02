@@ -1897,13 +1897,32 @@ async function uploadPendingAssets(taskId, files = pendingFiles, voices = pendin
 async function recordTaskActivity(taskId, action) {
   if (!taskId || !action) return;
   try {
-    await supabase.from("task_activity").insert({
-      task_id: taskId,
-      action,
-      actor_id: session.user.id,
-    });
+    const { data, error } = await supabase
+      .from("task_activity")
+      .insert({
+        task_id: taskId,
+        action,
+        actor_id: session.user.id,
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+    sendActivityPush(taskId, action, data?.id);
   } catch (error) {
     console.warn("Task activity could not be recorded.", error);
+  }
+}
+
+async function sendActivityPush(taskId, action, activityId = "") {
+  try {
+    const { data, error } = await supabase.functions.invoke("task-activity-push", {
+      body: { taskId, action, activityId },
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+    if (data?.push?.error) console.warn("Activity push warning.", data);
+  } catch (error) {
+    console.warn("Activity push could not be sent.", error);
   }
 }
 
