@@ -57,6 +57,11 @@ const i18n = {
     clientManagementTitle: "Companies",
     clientPlaceholder: "Company name",
     noClients: "No companies yet.",
+    editClient: "Edit",
+    deleteClient: "Delete",
+    editClientPrompt: "Company name",
+    deleteClientConfirm: "This company has tasks. Type DELETE to confirm deletion.",
+    deleteClientConfirmEmpty: "Delete this company?",
     weekdayMon: "Mon",
     weekdayTue: "Tue",
     weekdayWed: "Wed",
@@ -240,6 +245,11 @@ const i18n = {
     clientManagementTitle: "Firmalar",
     clientPlaceholder: "Firma adı",
     noClients: "Henüz firma yok.",
+    editClient: "Düzenle",
+    deleteClient: "Sil",
+    editClientPrompt: "Firma adı",
+    deleteClientConfirm: "Bu firmaya ait görevler var. Silmek için DELETE yaz.",
+    deleteClientConfirmEmpty: "Bu firma silinsin mi?",
     weekdayMon: "Pzt",
     weekdayTue: "Sal",
     weekdayWed: "Çar",
@@ -535,6 +545,7 @@ function wireEvents() {
   document.getElementById("profile-photo").addEventListener("change", updateProfilePhotoPreview);
   document.getElementById("approval-list").addEventListener("click", approveUser);
   document.getElementById("user-list").addEventListener("click", grantAdmin);
+  document.getElementById("client-list").addEventListener("click", handleClientAction);
   document.getElementById("test-push-button").addEventListener("click", sendTestPush);
   profileButton.addEventListener("click", openProfileModal);
   adminPageButton.addEventListener("click", () => openPanel(adminModal));
@@ -913,7 +924,21 @@ function renderClientControls() {
   const clientList = document.getElementById("client-list");
   if (clientList) {
     clientList.innerHTML = clients.length
-      ? clients.map((client) => `<span class="user-pill client-pill">${escapeHtml(client.name)}</span>`).join("")
+      ? clients.map((client) => {
+          const taskCount = tasks.filter((task) => task.clientId === client.id).length;
+          return `
+            <div class="approval-row client-row">
+              <div>
+                <strong>${escapeHtml(client.name)}</strong>
+                <span>${taskCount} ${t("tasksLabel")}</span>
+              </div>
+              <div class="row-actions">
+                <button class="ghost-button" type="button" data-edit-client="${client.id}">${t("editClient")}</button>
+                <button class="danger-button" type="button" data-delete-client="${client.id}">${t("deleteClient")}</button>
+              </div>
+            </div>
+          `;
+        }).join("")
       : `<p class="empty-note">${t("noClients")}</p>`;
   }
 }
@@ -1832,6 +1857,47 @@ async function addClient(event) {
   renderAll();
 }
 
+async function handleClientAction(event) {
+  const editButton = event.target.closest("[data-edit-client]");
+  const deleteButton = event.target.closest("[data-delete-client]");
+  if (!editButton && !deleteButton) return;
+  if (!currentProfile?.is_admin) return;
+
+  const clientId = editButton?.dataset.editClient || deleteButton?.dataset.deleteClient;
+  const client = clients.find((item) => item.id === clientId);
+  if (!client) return;
+
+  if (editButton) {
+    const nextName = prompt(t("editClientPrompt"), client.name);
+    if (nextName === null || !nextName.trim() || nextName.trim() === client.name) return;
+    const { error } = await supabase.from("clients").update({ name: nextName.trim() }).eq("id", client.id);
+    if (error) {
+      alert(error.message);
+      return;
+    }
+  } else {
+    const taskCount = tasks.filter((task) => task.clientId === client.id).length;
+    if (taskCount) {
+      const typed = prompt(`${t("deleteClientConfirm")}\n${client.name} • ${taskCount} ${t("tasksLabel")}`);
+      if (typed !== "DELETE") return;
+    } else if (!confirm(t("deleteClientConfirmEmpty"))) {
+      return;
+    }
+    const { error } = await supabase.from("clients").delete().eq("id", client.id);
+    if (error) {
+      alert(error.message);
+      return;
+    }
+    if (activeClientId === client.id) {
+      activeClientId = "all";
+      localStorage.setItem("workflow-active-client", activeClientId);
+    }
+  }
+
+  await loadData();
+  renderAll();
+}
+
 function openProfileModal() {
   document.getElementById("profile-name").value = currentProfile?.full_name || "";
   document.getElementById("profile-role").value = currentProfile?.role || "";
@@ -2338,14 +2404,7 @@ function initOneSignal() {
           welcomeNotification: { disable: true },
         });
         oneSignalInitialized = true;
-        if (currentProfile?.id) {
-          await OneSignal.login(currentProfile.id);
-          OneSignal.User.addTags({
-            profile_id: currentProfile.id,
-            email: session?.user?.email || "",
-            role: currentProfile.role || "",
-          });
-        }
+        await syncOneSignalUser(OneSignal);
         updatePushStatus();
         resolve(OneSignal);
       } catch (error) {
@@ -2368,13 +2427,27 @@ async function enablePushNotifications() {
     const OneSignal = await initOneSignal();
     if (!OneSignal) return;
     await OneSignal.Notifications.requestPermission();
-    if (currentProfile?.id) await OneSignal.login(currentProfile.id);
+    await syncOneSignalUser(OneSignal);
     updatePushStatus();
   } catch (error) {
     updatePushStatus(error.message || String(error));
   } finally {
     button.disabled = false;
   }
+}
+
+async function syncOneSignalUser(OneSignal) {
+  if (!currentProfile?.id) return;
+  await OneSignal.login(currentProfile.id);
+  OneSignal.User?.addTags?.({
+    profile_id: currentProfile.id,
+    auth_user_id: session?.user?.id || "",
+    email: session?.user?.email || "",
+    role: currentProfile.role || "",
+  });
+  OneSignal.User?.addAlias?.("profile_id", currentProfile.id);
+  if (session?.user?.id) OneSignal.User?.addAlias?.("auth_user_id", session.user.id);
+  await OneSignal.User?.PushSubscription?.optIn?.();
 }
 
 function updatePushStatus(message = "") {

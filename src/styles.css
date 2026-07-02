@@ -2246,6 +2246,19 @@ h1 span {
   font-size: 0.82rem;
 }
 
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.client-row .ghost-button,
+.client-row .danger-button {
+  min-height: 34px;
+  padding: 7px 10px;
+}
+
 .empty-note {
   margin: 0;
 }
