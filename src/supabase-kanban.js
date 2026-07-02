@@ -7,6 +7,10 @@ const ONESIGNAL_APP_ID = "43d11ed8-49f4-4cfa-af62-291df7a81e54";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+if (new URLSearchParams(window.location.search).get("reset") === "1") {
+  await resetLocalAppState();
+}
+
 const columns = [
   { id: "plan", dayTr: "Pazartesi", dayEn: "Monday", titleTr: "Strateji & Planlama", titleEn: "Strategy & Planning", phaseTr: "Planla", phaseEn: "Plan", tone: "tone-blue" },
   { id: "start", dayTr: "Salı", dayEn: "Tuesday", titleTr: "Üretim Başlangıcı", titleEn: "Production Kickoff", phaseTr: "Üret", phaseEn: "Produce", tone: "tone-gold" },
@@ -464,6 +468,62 @@ const notificationButton = document.getElementById("notification-button");
 const profileForm = document.getElementById("profile-form");
 
 boot();
+
+async function resetLocalAppState() {
+  try {
+    await supabase.auth.signOut({ scope: "local" });
+  } catch (error) {
+    console.warn("Local sign out failed during reset", error);
+  }
+
+  try {
+    localStorage.clear();
+    sessionStorage.clear();
+  } catch (error) {
+    console.warn("Storage reset failed", error);
+  }
+
+  try {
+    if ("caches" in window) {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map((name) => caches.delete(name)));
+    }
+  } catch (error) {
+    console.warn("Cache reset failed", error);
+  }
+
+  try {
+    if ("serviceWorker" in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((registration) => registration.unregister()));
+    }
+  } catch (error) {
+    console.warn("Service worker reset failed", error);
+  }
+
+  try {
+    if (indexedDB.databases) {
+      const databases = await indexedDB.databases();
+      await Promise.all(
+        databases
+          .map((database) => database.name)
+          .filter(Boolean)
+          .map((name) => new Promise((resolve) => {
+            const request = indexedDB.deleteDatabase(name);
+            request.onsuccess = resolve;
+            request.onerror = resolve;
+            request.onblocked = resolve;
+          })),
+      );
+    }
+  } catch (error) {
+    console.warn("IndexedDB reset failed", error);
+  }
+
+  const cleanUrl = new URL(window.location.href);
+  cleanUrl.searchParams.delete("reset");
+  window.location.replace(cleanUrl.toString());
+}
 
 async function boot() {
   captureDeepLinkedTask();
