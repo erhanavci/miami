@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reset Miami Workflow</title>
+    <style>
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        font-family: Arial, sans-serif;
+        background: #fff4fb;
+        color: #251525;
+      }
+
+      main {
+        width: min(520px, calc(100% - 32px));
+        padding: 28px;
+        border: 1px solid #ffd1ea;
+        border-radius: 18px;
+        background: white;
+        box-shadow: 0 18px 60px rgba(240, 34, 145, 0.18);
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: 28px;
+      }
+
+      p {
+        margin: 0;
+        color: #6d5666;
+        line-height: 1.45;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Resetting app data...</h1>
+      <p>Please wait. You will be redirected to the login screen automatically.</p>
+    </main>
+    <script>
+      async function clearIndexedDb() {
+        if (!window.indexedDB) return;
+        if (indexedDB.databases) {
+          const databases = await indexedDB.databases();
+          await Promise.all(
+            databases
+              .map((database) => database.name)
+              .filter(Boolean)
+              .map((name) => new Promise((resolve) => {
+                const request = indexedDB.deleteDatabase(name);
+                request.onsuccess = resolve;
+                request.onerror = resolve;
+                request.onblocked = resolve;
+              })),
+          );
+        }
+      }
+
+      async function reset() {
+        try { localStorage.clear(); } catch (error) {}
+        try { sessionStorage.clear(); } catch (error) {}
+        try {
+          if ("caches" in window) {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map((name) => caches.delete(name)));
+          }
+        } catch (error) {}
+        try {
+          if ("serviceWorker" in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(registrations.map((registration) => registration.unregister()));
+          }
+        } catch (error) {}
+        try { await clearIndexedDb(); } catch (error) {}
+        window.location.replace("/");
+      }
+
+      reset();
+    </script>
+  </body>
+</html>

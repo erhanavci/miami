@@ -10,6 +10,7 @@ await fs.mkdir(path.join(outDir, "assets", "fonts"), { recursive: true });
 
 const files = [
   ["index.html", "index.html"],
+  ["reset.html", "reset.html"],
   ["manifest.json", "manifest.json"],
   ["OneSignalSDKWorker.js", "OneSignalSDKWorker.js"],
   ["OneSignalSDKUpdaterWorker.js", "OneSignalSDKUpdaterWorker.js"],
