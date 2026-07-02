@@ -471,7 +471,7 @@ async function boot() {
   session = data.session;
   wireEvents();
   applyI18n();
-  await renderShell();
+  await safeRenderShell();
   setInterval(refreshData, 15000);
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) refreshData();
@@ -479,8 +479,20 @@ async function boot() {
 
   supabase.auth.onAuthStateChange(async (_event, nextSession) => {
     session = nextSession;
-    await renderShell();
+    await safeRenderShell();
   });
+}
+
+async function safeRenderShell() {
+  try {
+    await renderShell();
+  } catch (error) {
+    console.error("App render failed", error);
+    authScreen.classList.toggle("app-hidden", Boolean(session));
+    pendingScreen.classList.add("app-hidden");
+    appScreen.classList.add("app-hidden");
+    setAuthMessage(error.message || String(error));
+  }
 }
 
 function wireEvents() {
@@ -626,7 +638,11 @@ async function login(event) {
     email: document.getElementById("login-email").value.trim(),
     password: document.getElementById("login-password").value,
   });
-  if (error) setAuthMessage(error.message);
+  if (error) {
+    setAuthMessage(error.message);
+    return;
+  }
+  await safeRenderShell();
 }
 
 async function logout() {
@@ -652,7 +668,7 @@ async function logout() {
     dataChannel = null;
   }
   taskForm.reset();
-  renderShell();
+  safeRenderShell();
 }
 
 async function register(event) {
@@ -2393,7 +2409,7 @@ function initOneSignal() {
   }
 
   window.OneSignalDeferred = window.OneSignalDeferred || [];
-  oneSignalInitPromise = new Promise((resolve, reject) => {
+  oneSignalInitPromise = new Promise((resolve) => {
     window.OneSignalDeferred.push(async (OneSignal) => {
       try {
         await OneSignal.init({
@@ -2404,12 +2420,13 @@ function initOneSignal() {
           welcomeNotification: { disable: true },
         });
         oneSignalInitialized = true;
-        await syncOneSignalUser(OneSignal);
+        await safeSyncOneSignalUser(OneSignal);
         updatePushStatus();
         resolve(OneSignal);
       } catch (error) {
+        console.warn("OneSignal init failed", error);
         updatePushStatus(error.message || String(error));
-        reject(error);
+        resolve(null);
       }
     });
   });
@@ -2427,12 +2444,21 @@ async function enablePushNotifications() {
     const OneSignal = await initOneSignal();
     if (!OneSignal) return;
     await OneSignal.Notifications.requestPermission();
-    await syncOneSignalUser(OneSignal);
+    await safeSyncOneSignalUser(OneSignal);
     updatePushStatus();
   } catch (error) {
     updatePushStatus(error.message || String(error));
   } finally {
     button.disabled = false;
+  }
+}
+
+async function safeSyncOneSignalUser(OneSignal) {
+  try {
+    await syncOneSignalUser(OneSignal);
+  } catch (error) {
+    console.warn("OneSignal user sync failed", error);
+    updatePushStatus(error.message || String(error));
   }
 }
 
