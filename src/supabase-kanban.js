@@ -5,7 +5,11 @@ const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp6YW5ubXZqeWJwa25ldHN6cXBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NDA4MTAsImV4cCI6MjA5MzExNjgxMH0.MvZi6BG896cfzz30eUOC7lWmRncIjCSZiABJUA-tMfA";
 const ONESIGNAL_APP_ID = "43d11ed8-49f4-4cfa-af62-291df7a81e54";
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    storageKey: "miami-workflow-auth-v2",
+  },
+});
 
 if (new URLSearchParams(window.location.search).get("reset") === "1") {
   await resetLocalAppState();
