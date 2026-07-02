@@ -166,6 +166,10 @@ const i18n = {
     approvalTitle: "User Approvals",
     approveButton: "Approve",
     noPendingUsers: "No users pending approval.",
+    pushTestTitle: "Push Test",
+    sendTestPush: "Send Test Push",
+    sendingTestPush: "Sending test push...",
+    testPushSent: "Test push request sent.",
     profileLabel: "Profile",
     profileTitle: "Profile Settings",
     profilePhoto: "Profile photo",
@@ -345,6 +349,10 @@ const i18n = {
     approvalTitle: "Kullanıcı Onayları",
     approveButton: "Onayla",
     noPendingUsers: "Onay bekleyen kullanıcı yok.",
+    pushTestTitle: "Push Test",
+    sendTestPush: "Test Push Gönder",
+    sendingTestPush: "Test push gönderiliyor...",
+    testPushSent: "Test push isteği gönderildi.",
     profileLabel: "Profil",
     profileTitle: "Profil Ayarları",
     profilePhoto: "Profil fotoğrafı",
@@ -527,6 +535,7 @@ function wireEvents() {
   document.getElementById("profile-photo").addEventListener("change", updateProfilePhotoPreview);
   document.getElementById("approval-list").addEventListener("click", approveUser);
   document.getElementById("user-list").addEventListener("click", grantAdmin);
+  document.getElementById("test-push-button").addEventListener("click", sendTestPush);
   profileButton.addEventListener("click", openProfileModal);
   adminPageButton.addEventListener("click", () => openPanel(adminModal));
   archiveButton.addEventListener("click", () => {
@@ -1723,6 +1732,25 @@ async function grantAdmin(event) {
   }
   await loadData();
   renderAll();
+}
+
+async function sendTestPush() {
+  const status = document.getElementById("test-push-status");
+  const button = document.getElementById("test-push-button");
+  button.disabled = true;
+  status.textContent = t("sendingTestPush");
+  try {
+    const { data, error } = await supabase.functions.invoke("test-push", {
+      body: { profileId: currentProfile?.id },
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+    status.textContent = `${t("testPushSent")} ${JSON.stringify(data?.push || data || {})}`;
+  } catch (error) {
+    status.textContent = error.message || String(error);
+  } finally {
+    button.disabled = false;
+  }
 }
 
 async function uploadPendingAssets(taskId, files = pendingFiles, voices = pendingVoices) {
