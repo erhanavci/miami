@@ -1484,12 +1484,14 @@ async function uploadAssetsAndNotify(taskId, files, voices, newlyAssigned, activ
 }
 
 async function sendAssignmentEmails(taskId, assigneeIds) {
-  try {
-    await supabase.functions.invoke("task-assignment-email", {
-      body: { taskId, assigneeIds },
-    });
-  } catch (error) {
-    console.warn("Assignment email function is not configured yet.", error);
+  const { data, error } = await supabase.functions.invoke("task-assignment-email", {
+    body: { taskId, assigneeIds },
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+  if (data?.push?.error) throw new Error(data.push.error);
+  if (data?.push?.skipped) {
+    console.warn("Assignment push was skipped. Check OneSignal environment variables.", data.push);
   }
 }
 
